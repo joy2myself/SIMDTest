@@ -1,4 +1,4 @@
-#include "../../simd_library/xsimd/xsimd/include/xsimd/xsimd.hpp"
+#include "../../simd_libraries/xsimd/include/xsimd/xsimd.hpp"
 #include <iostream>
 #include <complex>
 #include <numeric>

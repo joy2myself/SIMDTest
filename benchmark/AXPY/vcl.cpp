@@ -1,4 +1,4 @@
-#include "..\..\simd_library\VCL\version2\include\vectorclass.h"
+#include "..\..\simd_libraries\version2\vectorclass.h"
 #include <iostream>
 #include <chrono>   
 #include "scalar.cpp"
