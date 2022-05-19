@@ -4,9 +4,6 @@
 [submodule "simd_libraries/nsimd"]
 	path = simd_libraries/nsimd
 	url = https://github.com/agenium-scale/nsimd.git
-[submodule "xsimd"]
-	path = xsimd
-	url = https://github.com/xtensor-stack/xsimd.git
 [submodule "simd_libraries/libsimdpp"]
 	path = simd_libraries/libsimdpp
 	url = https://github.com/p12tic/libsimdpp.git
