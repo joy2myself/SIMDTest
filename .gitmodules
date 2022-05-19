@@ -1,6 +1,3 @@
-[submodule "simd_libraries/version2"]
-	path = simd_libraries/version2
-	url = https://github.com/vectorclass/version2.git
 [submodule "simd_libraries/nsimd"]
 	path = simd_libraries/nsimd
 	url = https://github.com/agenium-scale/nsimd.git
@@ -28,3 +25,6 @@
 [submodule "simd_libraries/xsimd"]
 	path = simd_libraries/xsimd
 	url = https://github.com/xtensor-stack/xsimd.git
+[submodule "simd_libraries/version2"]
+	path = simd_libraries/version2
+	url = https://github.com/vectorclass/version2.git
