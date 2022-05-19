@@ -1,0 +1,30 @@
+[submodule "simd_libraries/version2"]
+	path = simd_libraries/version2
+	url = https://github.com/vectorclass/version2.git
+[submodule "simd_libraries/nsimd"]
+	path = simd_libraries/nsimd
+	url = https://github.com/agenium-scale/nsimd.git
+[submodule "xsimd"]
+	path = xsimd
+	url = https://github.com/xtensor-stack/xsimd.git
+[submodule "simd_libraries/libsimdpp"]
+	path = simd_libraries/libsimdpp
+	url = https://github.com/p12tic/libsimdpp.git
+[submodule "simd_libraries/highway"]
+	path = simd_libraries/highway
+	url = https://github.com/google/highway.git
+[submodule "simd_libraries/umesimd"]
+	path = simd_libraries/umesimd
+	url = https://github.com/edanor/umesimd.git
+[submodule "simd_libraries/MIPP"]
+	path = simd_libraries/MIPP
+	url = https://github.com/aff3ct/MIPP.git
+[submodule "simd_libraries/generic_simd"]
+	path = simd_libraries/generic_simd
+	url = https://github.com/genericsimd/generic_simd.git
+[submodule "simd_libraries/Vc"]
+	path = simd_libraries/Vc
+	url = https://github.com/VcDevel/Vc.git
+[submodule "simd_libraries/boost-simd-clone"]
+	path = simd_libraries/boost-simd-clone
+	url = https://github.com/nickporubsky/boost-simd-clone.git
