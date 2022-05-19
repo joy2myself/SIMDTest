@@ -25,3 +25,6 @@
 [submodule "simd_libraries/boost-simd-clone"]
 	path = simd_libraries/boost-simd-clone
 	url = https://github.com/nickporubsky/boost-simd-clone.git
+[submodule "simd_libraries/xsimd"]
+	path = simd_libraries/xsimd
+	url = https://github.com/xtensor-stack/xsimd.git
