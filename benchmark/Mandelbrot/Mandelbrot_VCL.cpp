@@ -3,7 +3,6 @@
 #include <complex>
 #include <numeric>
 #include <chrono>   
-#include "Mandelbrot_scalar.cpp"
 using namespace std;
 using namespace chrono;
 #define _Tpb _Tp##b
@@ -86,19 +85,11 @@ inline void printTimeAndSpeedup(float x0, float y0, float x1, float y1, int widt
         auto start_simd = std::chrono::system_clock::now();
         mandelbrot_VCL<_Tp>(x0,y0,x1,y1,width,height,maxIterations);
         auto end_simd   = std::chrono::system_clock::now();
-        auto duration_simd = std::chrono::duration_cast<std::chrono::microseconds>(end_simd - start_simd);
-        VCL_time[i] = double(duration_simd.count()) * std::chrono::microseconds::period::num / std::chrono::microseconds::period::den / _Tp().size();
-
-        auto start_scalar = std::chrono::system_clock::now();
-        mandelbrot_scalar(x0,y0,x1,y1,width,height,maxIterations);
-        auto end_scalar   = std::chrono::system_clock::now();
-        auto duration_scalar = std::chrono::duration_cast<std::chrono::microseconds>(end_scalar - start_scalar);
-        scalar_time[i] = double(duration_scalar.count()) * std::chrono::microseconds::period::num / std::chrono::microseconds::period::den;
-
-        speedup[i] = scalar_time[i] / VCL_time[i];
+        auto duration_simd = std::chrono::duration_cast<std::chrono::nanoseconds>(end_simd - start_simd);
+        VCL_time[i] = double(duration_simd.count()) * std::chrono::nanoseconds::period::num / std::chrono::nanoseconds::period::den / _Tp().size();
     }
 
-    printf(" \n scalar average time = %lf\n VCL average time = %lf\n average speedup = %lf\n", average(scalar_time, Times),average(VCL_time, Times),average(speedup, Times));
+    printf(" VCL average time = %lf ns\n ",average(VCL_time, Times));
 
 }
 
@@ -111,6 +102,6 @@ int main(void)
     const float y0 = -1;
     const float y1 = 1;
     const int maxIters = 256;
-    printTimeAndSpeedup<Vec4f,20>(x0,y0,x1,y1,width,height,maxIters);// the first parameter is vector type, the second is times of loop
+    printTimeAndSpeedup<Vec4f,10>(x0,y0,x1,y1,width,height,maxIters);// the first parameter is vector type, the second is times of loop
     return 0;
 }

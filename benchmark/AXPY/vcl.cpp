@@ -1,7 +1,6 @@
 #include "../../simd_libraries/version2/vectorclass.h"
 #include <iostream>
 #include <chrono>   
-#include "scalar.cpp"
 using namespace std;
 using namespace chrono;
 
@@ -44,17 +43,9 @@ inline void printTimeAndSpeedup(int32_t a, int32_t x[N], int32_t y[N], int32_t r
         auto end_simd   = std::chrono::system_clock::now();
         auto duration_simd = std::chrono::duration_cast<std::chrono::nanoseconds>(end_simd - start_simd);
         VCL_time[i] = double(duration_simd.count()) / _Tp().size();
-
-        auto start_scalar = std::chrono::system_clock::now();
-        axpy_scalar<N>(a,x,y,res);
-        auto end_scalar   = std::chrono::system_clock::now();
-        auto duration_scalar = std::chrono::duration_cast<std::chrono::nanoseconds>(end_scalar - start_scalar);
-        scalar_time[i] = double(duration_scalar.count()); 
-
-        speedup[i] = scalar_time[i] / VCL_time[i];
     }
 
-    printf(" \n scalar average time = %lf ns\n VCL average time = %lf ns\n average speedup = %lf \n", average(scalar_time, Times),average(VCL_time, Times),average(speedup, Times));
+    printf(" VCL average time = %lf ns\n ", average(VCL_time, Times));
 
 }
 
@@ -64,6 +55,6 @@ int main(void)
     int32_t x[16] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
     int32_t y[16] = {17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32};
     int32_t res[16] = {0};
-    printTimeAndSpeedup<Vec16i,10000,16>(a,x,y,res);// the first parameter is vector type, the second is times of loop
+    printTimeAndSpeedup<Vec4i,10000,16>(a,x,y,res);// the first parameter is vector type, the second is times of loop
     return 0;
 }

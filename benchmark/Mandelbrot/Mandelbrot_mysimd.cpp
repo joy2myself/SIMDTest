@@ -13,42 +13,6 @@ double average(double *x, int len)
     return sum / len; 
 }
 
-inline void mandel_scalar(float c_re, float c_im, int count)
-{
-    float z_re = c_re, z_im = c_im;
-    int i;
-    for (i = 0; i < count; ++i)
-    {
-        if (z_re * z_re + z_im * z_im > 4.f)
-        {
-            break;
-        }
-
-        float new_re = z_re * z_re - z_im * z_im;
-        float new_im = 2.f * z_re * z_im;
-        z_re = c_re + new_re;
-        z_im = c_im + new_im;
-    }
-}
-
-inline void mandelbrot_scalar(float x0, float y0, float x1, float y1,
-                    int width, int height, int maxIterations)
-{
-    float dx = (x1 - x0) / width;
-    float dy = (y1 - y0) / height;
-
-    for (int j = 0; j < height; j++)
-    {
-        for (int i = 0; i < width; ++i)
-        {
-            float x = x0 + i * dx;
-            float y = y0 + j * dy;
-            mandel_scalar(x, y, maxIterations);
-        }
-    }
-}
-
-
 template<int N>
     inline void mandel_simd(const ex::fixed_size_simd_mask<float,N>& _active,const ex::fixed_size_simd<float,N>& c_re, const ex::fixed_size_simd<float,N>& c_im, int count)
     {
@@ -106,19 +70,11 @@ inline void printTimeAndSpeedup(float x0, float y0, float x1, float y1, int widt
         auto start_simd = std::chrono::system_clock::now();
         mandelbrot_simd<N>(x0,y0,x1,y1,width,height,maxIterations);
         auto end_simd   = std::chrono::system_clock::now();
-        auto duration_simd = std::chrono::duration_cast<std::chrono::microseconds>(end_simd - start_simd);
-        simd_time[i] = double(duration_simd.count()) * std::chrono::microseconds::period::num / std::chrono::microseconds::period::den / N;
-
-        auto start_scalar = std::chrono::system_clock::now();
-        mandelbrot_scalar(x0,y0,x1,y1,width,height,maxIterations);
-        auto end_scalar   = std::chrono::system_clock::now();
-        auto duration_scalar = std::chrono::duration_cast<std::chrono::microseconds>(end_scalar - start_scalar);
-        scalar_time[i] = double(duration_scalar.count()) * std::chrono::microseconds::period::num / std::chrono::microseconds::period::den;
-
-        speedup[i] = scalar_time[i] / simd_time[i];
+        auto duration_simd = std::chrono::duration_cast<std::chrono::nanoseconds>(end_simd - start_simd);
+        simd_time[i] = double(duration_simd.count()) * std::chrono::nanoseconds::period::num / std::chrono::nanoseconds::period::den / N;
     }
 
-    printf(" \n scalar average time = %lf s\n simd average time = %lf s\n average speedup = %lf\n", average(scalar_time, Times),average(simd_time, Times),average(speedup, Times));
+    printf(" simd average time = %lf s\n ", average(simd_time, Times));
 
 }
 
@@ -130,6 +86,6 @@ int main(){
     const float y0 = -1;
     const float y1 = 1;
     const int maxIters = 256;
-    printTimeAndSpeedup<8,10>(x0,y0,x1,y1,width,height,maxIters);// the first parameter is the length of simd, the second is times of loop
+    printTimeAndSpeedup<4,10>(x0,y0,x1,y1,width,height,maxIters);// the first parameter is the length of simd, the second is times of loop
     return 0;
 }
