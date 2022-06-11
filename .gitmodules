@@ -28,3 +28,6 @@
 [submodule "simd_libraries/version2"]
 	path = simd_libraries/version2
 	url = https://github.com/vectorclass/version2.git
+[submodule "simd_libraries/google_benchmark"]
+	path = simd_libraries/google_benchmark
+	url = https://github.com/google/benchmark.git
