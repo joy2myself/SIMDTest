@@ -1,5 +1,15 @@
 # simd libraries benchmark
 
-Benchmarks of existing popular simd libraries 本仓库主要是对simd_library文件夹中所有的库写benchmark，目前要写AXPY和Mandelbrot这两个，每一个benchmark的cpp文件（除了scalar版本的）都会 打印出平均花费的时间以及相对于scalar版本的平均加速比。经过测试，vcl和xsimd版本的mandelbrot甚至要比scalar版本的效率还要低，不知是什么原因（不知道是不是代码写的有问题）， 烦请各位批评指正
+目前只测试了GCC
+
+benchmark/v1：普通版本的测试（无框架）
+benchmark/v2：利用了tsimd的测试框架，测试命令为g++ -O2 -march=core-avx2 -std=c++17 <filename>
+benchmark/v3：利用了Google benchmark测试框架 g++ -O2 -march=core-avx2 -std=c++17 -pthread -lbenchmark <filename> 
+
+目前已实现的benchmark有两种：AXPY和Mandelbrot；
+目前已实现的benchmark的simd版本有：std，xsimd，VCL；
+
+
+
 
 
