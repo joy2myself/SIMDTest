@@ -159,7 +159,7 @@ template<int N>
         for (int i = 0; i < maxIters; ++i)
         {
             ex::fixed_size_simd_mask<float,N> active = _active & ((z_re * z_re + z_im * z_im) <= ex::fixed_size_simd<float,N>(4.f));
-            if (ex::any_of(active))
+            if (!ex::any_of(active))
             {
                 break;
             }
