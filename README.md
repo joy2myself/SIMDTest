@@ -4,6 +4,8 @@
 
 ## 说明
 
+注意在dev分支上提交benchmark
+
 v2版本使用的是tsimd测试框架来测试的。
 
 v3版本使用的是google benchmark测试框架来测试的。
