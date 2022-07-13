@@ -17,6 +17,7 @@ v4版本使用的是nanobench测试框架来测试的。
 克隆之后，把submodule克隆下来
 
 ```cpp
+$git checkout dev
 $git clone git@yt.droid.ac.cn:panhaolin/simd-libraries-benchmark.git
 $cd simd-libraries-benchmark
 $git submodule update --init --recursive
@@ -27,11 +28,11 @@ $git submodule update --init --recursive
 
 ```cpp
 //使用自己得库
-clang++ -O2 -march=corei7-avx -mavx2 -mfma -I../../../nanobench-4.3.7/src/include mandelbrot.cpp                        \\
+clang++ -O2 -march=corei7-avx -mavx2 -mfma -I../../nanobench/src/include mandelbrot.cpp                        \\
 	-nostdinc++ -nostdlib++ -isystem /*PATH*/llvm-project/build/include/c++/v1 -L  /usr/lib -Wl,-rpath, /usr/lib        \\
 	-lc++ -std=c++20
 
-g++ -O2 -march=corei7-avx -mavx2 -mfma   -I../../../nanobench-4.3.7/src/include mandelbrot.cpp                          \\
+g++ -O2 -march=corei7-avx -mavx2 -mfma   -I../../nanobench/src/include mandelbrot.cpp                          \\
 	-std=c++20 -nostdinc++ -nodefaultlibs -isystem /*PATH*/llvm-project/build/include/c++/v1 -L /usr/lib                \\
 	-Wl,-rpath,/usr/lib -lc++ -lc++abi -lm -lc -lgcc_s -lgcc
 
