@@ -1,4 +1,4 @@
-#include <benchmark/benchmark.h>
+#include <gperftools/profiler.h>
 #include <iostream>
 #include <experimental/simd>
 #include "config.h"
@@ -232,81 +232,19 @@ void axpy(float a, float x[16], float y[16], float res[16]){
 }// namespace eve
 
 
+int main(){
 
-// benchmark function///////////////////////////////////////////////////////
-static void BM_AXPY_SCALAR(benchmark::State& state) {
-    for (auto _ : state)
-        _scalar_::axpy(a,x,y,res);
+    ProfilerStart("test.prof");
+
+    for(int i = 0; i < 20000000; ++i){
+    _scalar_::axpy(a,x,y,res);
+    _mysimd_::axpy<4>(a,x,y,res);
+   // _mysimd_::axpy<8>(a,x,y,res);
+    _VCL_::axpy<Vec4f>(a,x,y,res);
+    //_VCL_::axpy<Vec8f>(a,x,y,res);
+    }
+
+
+    ProfilerStop();
+
 }
-
-template <int N>
-static void BM_AXPY_gcc_std_simd(benchmark::State& state) {
-    for (auto _ : state)
-        _mysimd_::axpy<N>(a,x,y,res);
-}
-
-template <typename _Tp>
-static void BM_AXPY_VCL(benchmark::State& state) {
-    for (auto _ : state)
-        _VCL_::axpy<_Tp>(a,x,y,res);
-}
-
-template <typename arch>
-static void BM_AXPY_xsimd(benchmark::State& state) {
-    for (auto _ : state)
-        _xsimd_::axpy<arch>(a,x,y,res);
-}
-
-static void BM_AXPY_mipp(benchmark::State& state) {
-    for (auto _ : state)
-        _MIPP_::axpy(a,x,y,res);
-}
-
-static void BM_AXPY_nsimd_4(benchmark::State& state) {
-    for (auto _ : state)
-        _nsimd_::axpy_4(a,x,y,res);
-}
-
-static void BM_AXPY_nsimd_8(benchmark::State& state) {
-    for (auto _ : state)
-        _nsimd_::axpy_8(a,x,y,res);
-}
-
-template <typename _Tp>
-static void BM_AXPY_tsimd(benchmark::State& state) {
-    for (auto _ : state)
-        _tsimd_::axpy<_Tp>(a,x,y,res);
-}
-
-template <int N>
-static void BM_AXPY_eve(benchmark::State& state) {
-    for (auto _ : state)
-        _EVE_::axpy<N>(a,x,y,res);
-}
-
-
-//benchmarking///////////////////////////////////////////////////////////////
-
-BENCHMARK(BM_AXPY_SCALAR);
-
-BENCHMARK(BM_AXPY_mipp);
-
-// BENCHMARK(BM_AXPY_nsimd_4);
-// BENCHMARK(BM_AXPY_nsimd_8);
-
-BENCHMARK_TEMPLATE(BM_AXPY_VCL, Vec4f);
-BENCHMARK_TEMPLATE(BM_AXPY_VCL, Vec8f);
-
-BENCHMARK_TEMPLATE(BM_AXPY_eve, 4);
-BENCHMARK_TEMPLATE(BM_AXPY_eve, 8);
-
-BENCHMARK_TEMPLATE(BM_AXPY_gcc_std_simd, 4);
-BENCHMARK_TEMPLATE(BM_AXPY_gcc_std_simd, 8);
-
-// BENCHMARK_TEMPLATE(BM_AXPY_xsimd, xsimd::sse4_2);
-// BENCHMARK_TEMPLATE(BM_AXPY_xsimd, xsimd::avx2);
-
-BENCHMARK_TEMPLATE(BM_AXPY_tsimd, tsimd::vfloat4);
-BENCHMARK_TEMPLATE(BM_AXPY_tsimd, tsimd::vfloat8);
-
-BENCHMARK_MAIN();

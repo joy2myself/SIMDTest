@@ -1,10 +1,10 @@
-#include <benchmark/benchmark.h>
 #include <iostream>
+#include <gperftools/profiler.h>
 #include <numeric>
 #include <experimental/simd>
 #include "../../simd_libraries/version2/vectorclass.h"
 #include "../../simd_libraries/xsimd/include/xsimd/xsimd.hpp"
-//#include "../../simd_libraries/libsimdpp/simdpp/simd.h"
+
 
 namespace xs = xsimd;
 namespace ex = std::experimental::parallelism_v2;
@@ -363,44 +363,18 @@ template<int N>
 }// namespace simdpp
 
 
-static void BM_Mandel_scalar(benchmark::State& state) {
-    std::fill(_buf.begin(), _buf.end(), 0);
-    for (auto _ : state)
+int main(){
+
+    ProfilerStart("test.prof");
+
+    for(int i = 0; i < 10; ++i){
+        std::fill(_buf.begin(), _buf.end(), 0);
         _scalar_::mandelbrot(x_0, y_0, x_1, y_1, _width, _height, _maxIters, _buf.data());
-}//scalar bench function
 
-template <int N>
-static void BM_Mandel_gcc_std_simd(benchmark::State& state) {
-    std::fill(_buf.begin(), _buf.end(), 0);
-    for (auto _ : state)
-        _mysimd_::mandelbrot<N>(x_0, y_0, x_1, y_1, _width, _height, _maxIters, _buf.data());
-}// mysimd bench function
+        std::fill(_buf.begin(), _buf.end(), 0);
+        _mysimd_::mandelbrot<4>(x_0, y_0, x_1, y_1, _width, _height, _maxIters, _buf.data());
+    }
 
-template <typename _Tp,typename _Tpb,typename _Tpi>
-static void BM_Mandel_VCL(benchmark::State& state) {
-    std::fill(_buf.begin(), _buf.end(), 0);
-    for (auto _ : state)
-        _VCL_::mandelbrot<_Tp,_Tpb,_Tpi>(x_0, y_0, x_1, y_1, _width, _height, _maxIters, _buf.data());
-}//VCL bench function
+    ProfilerStop();
 
-template <typename arch>
-static void BM_Mandel_xsimd(benchmark::State& state) {
-    std::fill(_buf.begin(), _buf.end(), 0);
-    for (auto _ : state)
-        _xsimd_::mandelbrot<arch>(x_0, y_0, x_1, y_1, _width, _height, _maxIters,_buf.data());
-}//XSIMD bench function
-
-
-
-BENCHMARK(BM_Mandel_scalar);
-
-BENCHMARK_TEMPLATE(BM_Mandel_gcc_std_simd, 4);
-BENCHMARK_TEMPLATE(BM_Mandel_gcc_std_simd, 8);
-
-BENCHMARK_TEMPLATE(BM_Mandel_VCL, Vec4f, Vec4fb, Vec4i);
-BENCHMARK_TEMPLATE(BM_Mandel_VCL, Vec8f, Vec8fb, Vec8i);
-
-BENCHMARK_TEMPLATE(BM_Mandel_xsimd, xs::sse4_2);
-BENCHMARK_TEMPLATE(BM_Mandel_xsimd, xs::avx2);
-
-BENCHMARK_MAIN();
+}

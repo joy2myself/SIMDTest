@@ -31,3 +31,6 @@
 [submodule "simd_libraries/google_benchmark"]
 	path = simd_libraries/google_benchmark
 	url = https://github.com/google/benchmark.git
+[submodule "simd_libraries/nanobench"]
+	path = simd_libraries/nanobench
+	url = https://github.com/martinus/nanobench.git

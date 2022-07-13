@@ -19,7 +19,7 @@
 #include <vector>
 #include <cstring>
 #include <experimental/simd>
-#include "../../simd_libraries/version2/include/vectorclass.h"
+#include "../../simd_libraries/version2/vectorclass.h"
 #include "../../simd_libraries/xsimd/include/xsimd/xsimd.hpp"
 #include "pico_bench.hpp"
 
@@ -101,14 +101,14 @@ namespace mysimd
 {
 
 template<int N>
-    inline ex::fixed_size_simd<int,N> mandel(const ex::fixed_size_simd_mask<float,N>& _active,
+    inline ex::fixed_size_simd<float,N> mandel(const ex::fixed_size_simd_mask<float,N>& _active,
                             const ex::fixed_size_simd<float,N>& c_re, 
                             const ex::fixed_size_simd<float,N>& c_im, 
                             int maxIters)
     {
         ex::fixed_size_simd<float,N> z_re = c_re;
         ex::fixed_size_simd<float,N> z_im = c_im;
-        ex::fixed_size_simd<int,N> vi(0);
+        ex::fixed_size_simd<float,N> vi(0);
 
         for (int i = 0; i < maxIters; ++i)
         {
@@ -151,9 +151,9 @@ template<int N>
 
                 
                 int base_index = (j * width + i);
-                ex::fixed_size_simd<int,N> result = mandel<N>(active, x, y, maxIters);
+                ex::fixed_size_simd<float,N> result = mandel<N>(active, x, y, maxIters);
 
-                ex::fixed_size_simd<int,N> prev_data;
+                ex::fixed_size_simd<float,N> prev_data;
                 prev_data.copy_from(output + base_index,ex::element_aligned_tag());
 
                 ex::where(!active,result) = prev_data;
@@ -412,23 +412,23 @@ int main()
 
     // VCL run ////////////////////////////////////////////////////////////////
         //VCL n=4 ////////////////////////////////////////////////////////////////
-    std::fill(buf.begin(), buf.end(), 0);
+    // std::fill(buf.begin(), buf.end(), 0);
 
-    auto stats_VCL4 = bencher([&]()
-                                { VCL::mandelbrot<Vec4f,Vec4fb,Vec4i>(x0, y0, x1, y1, width, height, maxIters, buf.data()); });
+    // auto stats_VCL4 = bencher([&]()
+    //                             { VCL::mandelbrot<Vec4f,Vec4fb,Vec4i>(x0, y0, x1, y1, width, height, maxIters, buf.data()); });
 
-    const float VCL4_min = stats_VCL4.min().count();
+    // const float VCL4_min = stats_VCL4.min().count();
 
-    std::cout << '\n'
-              << "VCL N = 4 " << stats_VCL4 << '\n';
-        //VCL n=8 ////////////////////////////////////////////////////////////////
-    auto stats_VCL8 = bencher([&]()
-                                { VCL::mandelbrot<Vec8f,Vec8fb,Vec8i>(x0, y0, x1, y1, width, height, maxIters, buf.data()); });
+    // std::cout << '\n'
+    //           << "VCL N = 4 " << stats_VCL4 << '\n';
+    //     //VCL n=8 ////////////////////////////////////////////////////////////////
+    // auto stats_VCL8 = bencher([&]()
+    //                             { VCL::mandelbrot<Vec8f,Vec8fb,Vec8i>(x0, y0, x1, y1, width, height, maxIters, buf.data()); });
 
-    const float VCL8_min = stats_VCL8.min().count();
+    // const float VCL8_min = stats_VCL8.min().count();
 
-    std::cout << '\n'
-              << "VCL N = 8 " << stats_VCL8 << '\n';
+    // std::cout << '\n'
+    //           << "VCL N = 8 " << stats_VCL8 << '\n';
 
     // xsimd run ////////////////////////////////////////////////////////////////
         // xsimd SSE4.2 ////////////////////////////////////////////////////////////////

@@ -1,10 +1,11 @@
-#include <benchmark/benchmark.h>
+#define ANKERL_NANOBENCH_IMPLEMENT
+#include <nanobench.h>
 #include <iostream>
 #include <numeric>
 #include <experimental/simd>
 #include "../../simd_libraries/version2/vectorclass.h"
 #include "../../simd_libraries/xsimd/include/xsimd/xsimd.hpp"
-//#include "../../simd_libraries/libsimdpp/simdpp/simd.h"
+
 
 namespace xs = xsimd;
 namespace ex = std::experimental::parallelism_v2;
@@ -68,7 +69,7 @@ namespace _scalar_
 
 namespace _VCL_{
 
-#include "../../simd_libraries/version2/vectorclass.h"
+static inline Vec64c select (Vec64cb const s, Vec64c const a, Vec64c const b);
 template <typename _Tp,typename _Tpb,typename _Tpi>
     inline _Tpi mandel(const _Tpb& _active,
                                    const _Tp& c_re,
@@ -149,14 +150,14 @@ namespace _mysimd_
 {
 
 template<int N>
-    inline ex::fixed_size_simd<int,N> mandel(const ex::fixed_size_simd_mask<float,N>& _active,
+    inline ex::fixed_size_simd<float,N> mandel(const ex::fixed_size_simd_mask<float,N>& _active,
                             const ex::fixed_size_simd<float,N>& c_re, 
                             const ex::fixed_size_simd<float,N>& c_im, 
                             int maxIters)
     {
         ex::fixed_size_simd<float,N> z_re = c_re;
         ex::fixed_size_simd<float,N> z_im = c_im;
-        ex::fixed_size_simd<int,N> vi(0);
+        ex::fixed_size_simd<float,N> vi(0);
 
         for (int i = 0; i < maxIters; ++i)
         {
@@ -199,9 +200,9 @@ template<int N>
 
                 
                 int base_index = (j * width + i);
-                ex::fixed_size_simd<int,N> result = mandel<N>(active, x, y, maxIters);
+                ex::fixed_size_simd<float,N> result = mandel<N>(active, x, y, maxIters);
 
-                ex::fixed_size_simd<int,N> prev_data;
+                ex::fixed_size_simd<float,N> prev_data;
                 prev_data.copy_from(output + base_index,ex::element_aligned_tag());
 
                 ex::where(!active,result) = prev_data;
@@ -363,44 +364,50 @@ template<int N>
 }// namespace simdpp
 
 
-static void BM_Mandel_scalar(benchmark::State& state) {
-    std::fill(_buf.begin(), _buf.end(), 0);
-    for (auto _ : state)
+int main(){
+
+    // ///////////////////////////N = 4//////////////////////////////////////////////////
+
+    ankerl::nanobench::Bench().run("scalar_MANDEL", [&] {
+        std::fill(_buf.begin(), _buf.end(), 0);
         _scalar_::mandelbrot(x_0, y_0, x_1, y_1, _width, _height, _maxIters, _buf.data());
-}//scalar bench function
+    });
 
-template <int N>
-static void BM_Mandel_gcc_std_simd(benchmark::State& state) {
-    std::fill(_buf.begin(), _buf.end(), 0);
-    for (auto _ : state)
-        _mysimd_::mandelbrot<N>(x_0, y_0, x_1, y_1, _width, _height, _maxIters, _buf.data());
-}// mysimd bench function
+    ankerl::nanobench::Bench().run("std_simd_MANDEL", [&] {
+        std::fill(_buf.begin(), _buf.end(), 0);
+        _mysimd_::mandelbrot<4>(x_0, y_0, x_1, y_1, _width, _height, _maxIters, _buf.data());
+    });
 
-template <typename _Tp,typename _Tpb,typename _Tpi>
-static void BM_Mandel_VCL(benchmark::State& state) {
-    std::fill(_buf.begin(), _buf.end(), 0);
-    for (auto _ : state)
-        _VCL_::mandelbrot<_Tp,_Tpb,_Tpi>(x_0, y_0, x_1, y_1, _width, _height, _maxIters, _buf.data());
-}//VCL bench function
+    // ankerl::nanobench::Bench().run("VCL_MANDEL", [&] {
+    //     std::fill(_buf.begin(), _buf.end(), 0);
+    //     _VCL_::mandelbrot<Vec4f, Vec4fb, Vec4i>(x_0, y_0, x_1, y_1, _width, _height, _maxIters, _buf.data());
+    // });
 
-template <typename arch>
-static void BM_Mandel_xsimd(benchmark::State& state) {
-    std::fill(_buf.begin(), _buf.end(), 0);
-    for (auto _ : state)
-        _xsimd_::mandelbrot<arch>(x_0, y_0, x_1, y_1, _width, _height, _maxIters,_buf.data());
-}//XSIMD bench function
+    ankerl::nanobench::Bench().run("xsimd_MANDEL", [&] {
+        std::fill(_buf.begin(), _buf.end(), 0);
+        _xsimd_::mandelbrot<xs::sse4_2>(x_0, y_0, x_1, y_1, _width, _height, _maxIters,_buf.data());
+    });
 
+    ///////////////////////////N = 8 //////////////////////////////////////////////////
 
+    // ankerl::nanobench::Bench().run("scalar_MANDEL", [&] {
+    //     std::fill(_buf.begin(), _buf.end(), 0);
+    //     _scalar_::mandelbrot(x_0, y_0, x_1, y_1, _width, _height, _maxIters, _buf.data());
+    // });
 
-BENCHMARK(BM_Mandel_scalar);
+    // ankerl::nanobench::Bench().run("std_simd_MANDEL", [&] {
+    //     std::fill(_buf.begin(), _buf.end(), 0);
+    //     _mysimd_::mandelbrot<8>(x_0, y_0, x_1, y_1, _width, _height, _maxIters, _buf.data());
+    // });
 
-BENCHMARK_TEMPLATE(BM_Mandel_gcc_std_simd, 4);
-BENCHMARK_TEMPLATE(BM_Mandel_gcc_std_simd, 8);
+    // // ankerl::nanobench::Bench().run("VCL_MANDEL", [&] {
+    // //     std::fill(_buf.begin(), _buf.end(), 0);
+    // //     _VCL_::mandelbrot<Vec8f, Vec8fb, Vec8i>(x_0, y_0, x_1, y_1, _width, _height, _maxIters, _buf.data());
+    // // });
 
-BENCHMARK_TEMPLATE(BM_Mandel_VCL, Vec4f, Vec4fb, Vec4i);
-BENCHMARK_TEMPLATE(BM_Mandel_VCL, Vec8f, Vec8fb, Vec8i);
+    // ankerl::nanobench::Bench().run("xsimd_MANDEL", [&] {
+    //     std::fill(_buf.begin(), _buf.end(), 0);
+    //     _xsimd_::mandelbrot<xs::avx>(x_0, y_0, x_1, y_1, _width, _height, _maxIters,_buf.data());
+    // });
 
-BENCHMARK_TEMPLATE(BM_Mandel_xsimd, xs::sse4_2);
-BENCHMARK_TEMPLATE(BM_Mandel_xsimd, xs::avx2);
-
-BENCHMARK_MAIN();
+}
