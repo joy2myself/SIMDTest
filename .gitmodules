@@ -34,3 +34,6 @@
 [submodule "simd_libraries/nanobench"]
 	path = simd_libraries/nanobench
 	url = https://github.com/martinus/nanobench.git
+[submodule "simd_libraries/tsimd"]
+	path = simd_libraries/tsimd
+	url = https://github.com/jeffamstutz/tsimd.git
