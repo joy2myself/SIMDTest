@@ -29,12 +29,12 @@ $git submodule update --init --recursive
 
 ```cpp
 //使用自己得库
-clang++ -O2 -march=corei7-avx -mavx2 -mfma -I../../nanobench/src/include mandelbrot.cpp                        \\
-	-nostdinc++ -nostdlib++ -isystem /*PATH*/llvm-project/build/include/c++/v1 -L  /usr/lib -Wl,-rpath, /usr/lib        \\
+clang++ -O2 -march=corei7-avx -mavx2 -mfma -I../../nanobench/src/include mandelbrot.cpp                                  \
+	-nostdinc++ -nostdlib++ -isystem /*PATH*/llvm-project/build/include/c++/v1 -L  /usr/lib -Wl,-rpath, /usr/lib         \
 	-lc++ -std=c++20
 
-g++ -O2 -march=corei7-avx -mavx2 -mfma   -I../../nanobench/src/include mandelbrot.cpp                          \\
-	-std=c++20 -nostdinc++ -nodefaultlibs -isystem /*PATH*/llvm-project/build/include/c++/v1 -L /usr/lib                \\
+g++ -O2 -march=corei7-avx -mavx2 -mfma   -I../../nanobench/src/include mandelbrot.cpp                                    \
+	-std=c++20 -nostdinc++ -nodefaultlibs -isystem /*PATH*/llvm-project/build/include/c++/v1 -L /usr/lib                 \
 	-Wl,-rpath,/usr/lib -lc++ -lc++abi -lm -lc -lgcc_s -lgcc
 
 // *PATH*为你从llvm-project克隆下来存放的地址
