@@ -18,9 +18,9 @@ v4版本使用的是nanobench测试框架来测试的。
 克隆之后，把submodule克隆下来
 
 ```cpp
-$git checkout dev
 $git clone git@yt.droid.ac.cn:panhaolin/simd-libraries-benchmark.git
 $cd simd-libraries-benchmark
+$git checkout dev
 $git submodule update --init --recursive
 ```
 
