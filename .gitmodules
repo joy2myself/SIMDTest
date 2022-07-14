@@ -37,3 +37,6 @@
 [submodule "simd_libraries/tsimd"]
 	path = simd_libraries/tsimd
 	url = https://github.com/jeffamstutz/tsimd.git
+[submodule "simd_libraries/eve"]
+	path = simd_libraries/eve
+	url = https://github.com/jfalcou/eve.git
