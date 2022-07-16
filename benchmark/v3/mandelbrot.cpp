@@ -4,7 +4,7 @@
 #include <experimental/simd>
 #include "../../simd_libraries/version2/vectorclass.h"
 #include "../../simd_libraries/xsimd/include/xsimd/xsimd.hpp"
-//#include "../../simd_libraries/libsimdpp/simdpp/simd.h"
+#include "../../simd_libraries/tsimd/tsimd/tsimd.h"
 
 namespace xs = xsimd;
 namespace ex = std::experimental::parallelism_v2;
@@ -21,7 +21,7 @@ std::vector<int> _buf(_width * _height);
 
 
 
-namespace _scalar_
+namespace __scalar_
 {
 
     inline int mandel(float c_re, float c_im, int count)
@@ -66,7 +66,7 @@ namespace _scalar_
 } // namespace scalar
 
 
-namespace _VCL_{
+namespace __vcl_{
 
 #include "../../simd_libraries/version2/vectorclass.h"
 template <typename _Tp,typename _Tpb,typename _Tpi>
@@ -145,7 +145,7 @@ template <typename _Tp,typename _Tpb,typename _Tpi>
 }// end namespace VCL
 
 
-namespace _mysimd_
+namespace __mysimd_
 {
 
 template<int N>
@@ -213,7 +213,7 @@ template<int N>
 } // namespace mysimd
 
 
-namespace _xsimd_
+namespace __xsimd_
 {
 
     template <class arch>
@@ -295,100 +295,102 @@ namespace _xsimd_
 } // namespace xsimd
 
 
-namespace simdpp{
+namespace __tsimd_ {
 
+  template <int W>
+  inline tsimd::vintn<W> mandel(const tsimd::vboolfn<W> &_active,
+                         const tsimd::vfloatn<W> &c_re,
+                         const tsimd::vfloatn<W> &c_im,
+                         int maxIters)
+  {
+    tsimd::vfloatn<W> z_re = c_re;
+    tsimd::vfloatn<W> z_im = c_im;
+    tsimd::vintn<W> vi(0);
 
-template<int N>
-    inline ex::fixed_size_simd<int,N> mandel(const ex::fixed_size_simd_mask<float,N>& _active,
-                            const ex::fixed_size_simd<float,N>& c_re, 
-                            const ex::fixed_size_simd<float,N>& c_im, 
-                            int maxIters)
-    {
-        ex::fixed_size_simd<float,N> z_re = c_re;
-        ex::fixed_size_simd<float,N> z_im = c_im;
-        ex::fixed_size_simd<int,N> vi(0);
+    for (int i = 0; i < maxIters; ++i) {
+      auto active = _active & ((z_re * z_re + z_im * z_im) <= 4.f);
+      if (tsimd::none(active))
+        break;
 
-        for (int i = 0; i < maxIters; ++i)
-        {
-            ex::fixed_size_simd_mask<float,N> active = _active & ((z_re * z_re + z_im * z_im) <= ex::fixed_size_simd<float,N>(4.f));
-            if (!ex::any_of(active))
-            {
-                break;
-            }
+      tsimd::vfloatn<W> new_re = z_re * z_re - z_im * z_im;
+      tsimd::vfloatn<W> new_im = 2.f * z_re * z_im;
 
-            ex::fixed_size_simd<float,N> new_re = z_re * z_re - z_im * z_im;
-            ex::fixed_size_simd<float,N> new_im = 2.f * z_re * z_im;
-            z_re = c_re + new_re;
-            z_im = c_im + new_im;
+      z_re = c_re + new_re;
+      z_im = c_im + new_im;
 
-            ex::where(active, vi)++;
-        }
-        return vi;
+      vi = tsimd::select(active, vi + 1, vi);
     }
 
-template<int N>
-    inline void mandelbrot(float x0, float y0, float x1, float y1, int width, int height, int maxIters, int output[])
-    {
-        float dx = (x1 - x0) / width;
-        float dy = (y1 - y0) / height;
-        
-        float arange[N];
-        std::iota(&arange[0], &arange[N], 0.f);
+    return vi;
+  }
 
-        ex::fixed_size_simd<float,N> programIndex;
-        programIndex.copy_from(&arange[0],ex::element_aligned_tag());
+  template <int W>
+  void mandelbrot(float x0,
+                  float y0,
+                  float x1,
+                  float y1,
+                  int width,
+                  int height,
+                  int maxIters,
+                  int output[])
+  {
+    float dx = (x1 - x0) / width;
+    float dy = (y1 - y0) / height;
 
-        for (int j = 0; j < height; j++)
-        {
-            for (int i = 0; i < width; i+=N)
-            {
-                ex::fixed_size_simd<float,N> x (x0 + (i + programIndex) * dx);
-                ex::fixed_size_simd<float,N> y (y0 + j * dy);
+    tsimd::vfloatn<W> programIndex(0);
+    std::iota(programIndex.begin(), programIndex.end(), 0.f);
 
-                ex::fixed_size_simd_mask<float,N> active = x < ex::fixed_size_simd<float,N>(width);
+    for (int j = 0; j < height; j++) {
+      for (int i = 0; i < width; i += W) {
+        tsimd::vfloatn<W> x(x0 + (i + programIndex) * dx);
+        tsimd::vfloatn<W> y(y0 + j * dy);
 
-                
-                int base_index = (j * width + i);
-                ex::fixed_size_simd<int,N> result = mandel<N>(active, x, y, maxIters);
+        auto active = x < width;
 
-                ex::fixed_size_simd<int,N> prev_data;
-                prev_data.copy_from(output + base_index,ex::element_aligned_tag());
+        int base_index = (j * width + i);
+        auto result    = mandel(active, x, y, maxIters);
 
-                ex::where(!active,result) = prev_data;
-                result.copy_to(output + base_index,ex::element_aligned_tag());
-            }
-        }
+        tsimd::store(result, output + base_index, active);
+      }
     }
+  }
 
-}// namespace simdpp
+} // namespace tsimd
 
 
 static void BM_Mandel_scalar(benchmark::State& state) {
     std::fill(_buf.begin(), _buf.end(), 0);
     for (auto _ : state)
-        _scalar_::mandelbrot(x_0, y_0, x_1, y_1, _width, _height, _maxIters, _buf.data());
+        __scalar_::mandelbrot(x_0, y_0, x_1, y_1, _width, _height, _maxIters, _buf.data());
 }//scalar bench function
 
 template <int N>
 static void BM_Mandel_gcc_std_simd(benchmark::State& state) {
     std::fill(_buf.begin(), _buf.end(), 0);
     for (auto _ : state)
-        _mysimd_::mandelbrot<N>(x_0, y_0, x_1, y_1, _width, _height, _maxIters, _buf.data());
+        __mysimd_::mandelbrot<N>(x_0, y_0, x_1, y_1, _width, _height, _maxIters, _buf.data());
 }// mysimd bench function
 
 template <typename _Tp,typename _Tpb,typename _Tpi>
 static void BM_Mandel_VCL(benchmark::State& state) {
     std::fill(_buf.begin(), _buf.end(), 0);
     for (auto _ : state)
-        _VCL_::mandelbrot<_Tp,_Tpb,_Tpi>(x_0, y_0, x_1, y_1, _width, _height, _maxIters, _buf.data());
+        __vcl_::mandelbrot<_Tp,_Tpb,_Tpi>(x_0, y_0, x_1, y_1, _width, _height, _maxIters, _buf.data());
 }//VCL bench function
 
 template <typename arch>
 static void BM_Mandel_xsimd(benchmark::State& state) {
     std::fill(_buf.begin(), _buf.end(), 0);
     for (auto _ : state)
-        _xsimd_::mandelbrot<arch>(x_0, y_0, x_1, y_1, _width, _height, _maxIters,_buf.data());
+        __xsimd_::mandelbrot<arch>(x_0, y_0, x_1, y_1, _width, _height, _maxIters, _buf.data());
 }//XSIMD bench function
+
+template <int N>
+static void BM_Mandel_tsimd(benchmark::State& state) {
+    std::fill(_buf.begin(), _buf.end(), 0);
+    for (auto _ : state)
+        __tsimd_::mandelbrot<N>(x_0, y_0, x_1, y_1, _width, _height, _maxIters, _buf.data());
+}//TSIMD bench function
 
 
 
@@ -401,6 +403,9 @@ BENCHMARK_TEMPLATE(BM_Mandel_VCL, Vec4f, Vec4fb, Vec4i);
 BENCHMARK_TEMPLATE(BM_Mandel_VCL, Vec8f, Vec8fb, Vec8i);
 
 BENCHMARK_TEMPLATE(BM_Mandel_xsimd, xs::sse4_2);
-BENCHMARK_TEMPLATE(BM_Mandel_xsimd, xs::avx2);
+//BENCHMARK_TEMPLATE(BM_Mandel_xsimd, xs::avx2);
+
+BENCHMARK_TEMPLATE(BM_Mandel_tsimd, 4);
+BENCHMARK_TEMPLATE(BM_Mandel_tsimd, 8);
 
 BENCHMARK_MAIN();
