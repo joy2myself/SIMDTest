@@ -43,7 +43,7 @@ float res[16] = {0};
 
 // AXPY versiones of simd libraries and scalar///////////////////////////
 
-namespace _scalar_{
+namespace __scalar_{
 
     void axpy(float a, float b[16], float c[16],float res[16]){
 
@@ -54,7 +54,7 @@ namespace _scalar_{
 }//end scalar namespace
 
 
-namespace _VCL_{
+namespace __VCL_{
 template <typename _Tp, int N = 16>
     inline void axpy(float a, float x[N], float y[N], float res[N]){
         
@@ -77,7 +77,7 @@ template <typename _Tp, int N = 16>
 }// end VCL namespace
 
 
-namespace _mysimd_{
+namespace __std_simd_{
 template <int N,int num = 16>
     void axpy(float a, float x[num], float y[num], float res[num]){
         
@@ -99,7 +99,7 @@ template <int N,int num = 16>
 }//end mysimd namespace
 
 
-namespace _xsimd_{
+namespace __xsimd_{
 template <typename arch,int num = 16>
     void axpy(float a, float x[num], float y[num], float res[num]){
         
@@ -121,7 +121,7 @@ template <typename arch,int num = 16>
 }
 
 
-namespace _nsimd_{
+namespace __nsimd_{
 
 
 typedef nsimd::pack<f32,4> p_t_4;
@@ -164,7 +164,7 @@ void axpy_8(float a, float x[16], float y[16], float res[16]){
 }// namespace nsimd
 
 
-namespace _MIPP_{
+namespace __MIPP_{
 
     void axpy(float a, float x[16], float y[16], float res[16]){
         
@@ -188,7 +188,7 @@ namespace _MIPP_{
 }// namespace mipp
 
 
-namespace _tsimd_{
+namespace __tsimd_{
 
 template<typename T>
     void axpy(float a, float x[16], float y[16], float res[16]){
@@ -211,7 +211,7 @@ template<typename T>
 }
 
 
-namespace _EVE_{
+namespace __EVE_{
 
 template<int N>
 void axpy(float a, float x[16], float y[16], float res[16]){
@@ -237,27 +237,27 @@ int main(){
 
     // ///////////////////////////N = 4//////////////////////////////////////////////////
     // ankerl::nanobench::Bench().run("scalar_AXPY.cpp", [&] {
-    //     _scalar_::axpy(a,x,y,res);
+    //     __scalar_::axpy(a,x,y,res);
     // });
 
     // ankerl::nanobench::Bench().run("std_simd_AXPY", [&] {
-    //     _mysimd_::axpy<4>(a,x,y,res);
+    //     __std_simd_::axpy<4>(a,x,y,res);
     // });
 
     // ankerl::nanobench::Bench().run("VCL_AXPY", [&] {
-    //     _VCL_::axpy<Vec4f>(a,x,y,res);
+    //     __VCL_::axpy<Vec4f>(a,x,y,res);
     // });
 
     // ankerl::nanobench::Bench().run("xsimd_AXPY", [&] {
-    //     _xsimd_::axpy<xsimd::sse4_2>(a,x,y,res);
+    //     __xsimd_::axpy<xsimd::sse4_2>(a,x,y,res);
     // });
 
     // ankerl::nanobench::Bench().run("eve_AXPY", [&] {
-    //     _EVE_::axpy<4>(a,x,y,res);
+    //     __EVE_::axpy<4>(a,x,y,res);
     // });
 
     // ankerl::nanobench::Bench().run("nsimd_AXPY", [&] {
-    //     _nsimd_::axpy_4(a,x,y,res);
+    //     __nsimd_::axpy_4(a,x,y,res);
     // });
 
 
@@ -265,32 +265,32 @@ int main(){
 
     // ///////////////////////////N = 8//////////////////////////////////////////////////
     ankerl::nanobench::Bench().run("scalar_AXPY.cpp", [&] {
-        _scalar_::axpy(a,x,y,res);
+        __scalar_::axpy(a,x,y,res);
         //ankerl::nanobench::doNotOptimizeAway(res);
     });
 
     ankerl::nanobench::Bench().run("std_simd_AXPY", [&] {
-        _mysimd_::axpy<8>(a,x,y,res);
+        __std_simd_::axpy<8>(a,x,y,res);
         //ankerl::nanobench::doNotOptimizeAway(res);
     });
 
     ankerl::nanobench::Bench().run("VCL_AXPY", [&] {
-        _VCL_::axpy<Vec8f>(a,x,y,res);
+        __VCL_::axpy<Vec8f>(a,x,y,res);
         //ankerl::nanobench::doNotOptimizeAway(res);
     });
 
     ankerl::nanobench::Bench().run("xsimd_AXPY", [&] {
-        _xsimd_::axpy<xsimd::avx2>(a,x,y,res);
+        __xsimd_::axpy<xsimd::avx2>(a,x,y,res);
         //ankerl::nanobench::doNotOptimizeAway(res);
     });
 
     ankerl::nanobench::Bench().run("eve_AXPY", [&] {
-        _EVE_::axpy<8>(a,x,y,res);
+        __EVE_::axpy<8>(a,x,y,res);
         //ankerl::nanobench::doNotOptimizeAway(res);
     });
 
     ankerl::nanobench::Bench().run("nsimd_AXPY", [&] {
-        _nsimd_::axpy_8(a,x,y,res);
+        __nsimd_::axpy_8(a,x,y,res);
     });
 }
 

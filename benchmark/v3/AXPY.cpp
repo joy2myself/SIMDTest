@@ -42,7 +42,7 @@ float res[16] = {0};
 
 // AXPY versiones of simd libraries and scalar///////////////////////////
 
-namespace _scalar_{
+namespace __scalar_{
 
     void axpy(float a, float b[16], float c[16],float res[16]){
 
@@ -53,7 +53,7 @@ namespace _scalar_{
 }//end scalar namespace
 
 
-namespace _VCL_{
+namespace __VCL_{
 template <typename _Tp, int N = 16>
     inline void axpy(float a, float x[N], float y[N], float res[N]){
         
@@ -76,7 +76,7 @@ template <typename _Tp, int N = 16>
 }// end VCL namespace
 
 
-namespace _mysimd_{
+namespace __std_simd_{
 template <int N,int num = 16>
     void axpy(float a, float x[num], float y[num], float res[num]){
         
@@ -98,7 +98,7 @@ template <int N,int num = 16>
 }//end mysimd namespace
 
 
-namespace _xsimd_{
+namespace __xsimd_{
 template <typename arch,int num = 16>
     void axpy(float a, float x[num], float y[num], float res[num]){
         
@@ -120,7 +120,7 @@ template <typename arch,int num = 16>
 }
 
 
-namespace _nsimd_{
+namespace __nsimd_{
 
 
 typedef nsimd::pack<f32,4> p_t_4;
@@ -163,7 +163,7 @@ void axpy_8(float a, float x[16], float y[16], float res[16]){
 }// namespace nsimd
 
 
-namespace _MIPP_{
+namespace __MIPP_{
 
     void axpy(float a, float x[16], float y[16], float res[16]){
         
@@ -187,7 +187,7 @@ namespace _MIPP_{
 }// namespace mipp
 
 
-namespace _tsimd_{
+namespace __tsimd_{
 
 template<typename T>
     void axpy(float a, float x[16], float y[16], float res[16]){
@@ -210,7 +210,7 @@ template<typename T>
 }
 
 
-namespace _EVE_{
+namespace __EVE_{
 
 template<int N>
 void axpy(float a, float x[16], float y[16], float res[16]){
@@ -236,52 +236,52 @@ void axpy(float a, float x[16], float y[16], float res[16]){
 // benchmark function///////////////////////////////////////////////////////
 static void BM_AXPY_SCALAR(benchmark::State& state) {
     for (auto _ : state)
-        _scalar_::axpy(a,x,y,res);
+        __scalar_::axpy(a,x,y,res);
 }
 
 template <int N>
-static void BM_AXPY_gcc_std_simd(benchmark::State& state) {
+static void BM_AXPY_std_simd(benchmark::State& state) {
     for (auto _ : state)
-        _mysimd_::axpy<N>(a,x,y,res);
+        __std_simd_::axpy<N>(a,x,y,res);
 }
 
 template <typename _Tp>
 static void BM_AXPY_VCL(benchmark::State& state) {
     for (auto _ : state)
-        _VCL_::axpy<_Tp>(a,x,y,res);
+        __VCL_::axpy<_Tp>(a,x,y,res);
 }
 
 template <typename arch>
 static void BM_AXPY_xsimd(benchmark::State& state) {
     for (auto _ : state)
-        _xsimd_::axpy<arch>(a,x,y,res);
+        __xsimd_::axpy<arch>(a,x,y,res);
 }
 
 static void BM_AXPY_mipp(benchmark::State& state) {
     for (auto _ : state)
-        _MIPP_::axpy(a,x,y,res);
+        __MIPP_::axpy(a,x,y,res);
 }
 
 static void BM_AXPY_nsimd_4(benchmark::State& state) {
     for (auto _ : state)
-        _nsimd_::axpy_4(a,x,y,res);
+        __nsimd_::axpy_4(a,x,y,res);
 }
 
 static void BM_AXPY_nsimd_8(benchmark::State& state) {
     for (auto _ : state)
-        _nsimd_::axpy_8(a,x,y,res);
+        __nsimd_::axpy_8(a,x,y,res);
 }
 
 template <typename _Tp>
 static void BM_AXPY_tsimd(benchmark::State& state) {
     for (auto _ : state)
-        _tsimd_::axpy<_Tp>(a,x,y,res);
+        __tsimd_::axpy<_Tp>(a,x,y,res);
 }
 
 template <int N>
 static void BM_AXPY_eve(benchmark::State& state) {
     for (auto _ : state)
-        _EVE_::axpy<N>(a,x,y,res);
+        __EVE_::axpy<N>(a,x,y,res);
 }
 
 
@@ -300,8 +300,8 @@ BENCHMARK_TEMPLATE(BM_AXPY_VCL, Vec8f);
 BENCHMARK_TEMPLATE(BM_AXPY_eve, 4);
 BENCHMARK_TEMPLATE(BM_AXPY_eve, 8);
 
-BENCHMARK_TEMPLATE(BM_AXPY_gcc_std_simd, 4);
-BENCHMARK_TEMPLATE(BM_AXPY_gcc_std_simd, 8);
+BENCHMARK_TEMPLATE(BM_AXPY_std_simd, 4);
+BENCHMARK_TEMPLATE(BM_AXPY_std_simd, 8);
 
 // BENCHMARK_TEMPLATE(BM_AXPY_xsimd, xsimd::sse4_2);
 // BENCHMARK_TEMPLATE(BM_AXPY_xsimd, xsimd::avx2);

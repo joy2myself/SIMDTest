@@ -147,7 +147,7 @@ template <typename _Tp,typename _Tpb,typename _Tpi>
 }// end namespace VCL
 
 
-namespace __mysimd_
+namespace __std_simd_
 {
 
 template<int N>
@@ -360,69 +360,6 @@ namespace __tsimd_ {
 } // namespace tsimd
 
 
-namespace __tsimd_ {
-
-  template <int W>
-  inline tsimd::vintn<W> mandel(const tsimd::vboolfn<W> &_active,
-                         const tsimd::vfloatn<W> &c_re,
-                         const tsimd::vfloatn<W> &c_im,
-                         int maxIters)
-  {
-    tsimd::vfloatn<W> z_re = c_re;
-    tsimd::vfloatn<W> z_im = c_im;
-    tsimd::vintn<W> vi(0);
-
-    for (int i = 0; i < maxIters; ++i) {
-      auto active = _active & ((z_re * z_re + z_im * z_im) <= 4.f);
-      if (tsimd::none(active))
-        break;
-
-      tsimd::vfloatn<W> new_re = z_re * z_re - z_im * z_im;
-      tsimd::vfloatn<W> new_im = 2.f * z_re * z_im;
-
-      z_re = c_re + new_re;
-      z_im = c_im + new_im;
-
-      vi = tsimd::select(active, vi + 1, vi);
-    }
-
-    return vi;
-  }
-
-  template <int W>
-  void mandelbrot(float x0,
-                  float y0,
-                  float x1,
-                  float y1,
-                  int width,
-                  int height,
-                  int maxIters,
-                  int output[])
-  {
-    float dx = (x1 - x0) / width;
-    float dy = (y1 - y0) / height;
-
-    tsimd::vfloatn<W> programIndex(0);
-    std::iota(programIndex.begin(), programIndex.end(), 0.f);
-
-    for (int j = 0; j < height; j++) {
-      for (int i = 0; i < width; i += W) {
-        tsimd::vfloatn<W> x(x0 + (i + programIndex) * dx);
-        tsimd::vfloatn<W> y(y0 + j * dy);
-
-        auto active = x < width;
-
-        int base_index = (j * width + i);
-        auto result    = mandel(active, x, y, maxIters);
-
-        tsimd::store(result, output + base_index, active);
-      }
-    }
-  }
-
-} // namespace tsimd
-
-
 int main(){
 
     // ///////////////////////////N = 4//////////////////////////////////////////////////
@@ -434,7 +371,7 @@ int main(){
 
     ankerl::nanobench::Bench().run("std_simd_MANDEL", [&] {
         std::fill(_buf.begin(), _buf.end(), 0);
-        __mysimd_::mandelbrot<4>(x_0, y_0, x_1, y_1, _width, _height, _maxIters, _buf.data());
+        __std_simd_::mandelbrot<4>(x_0, y_0, x_1, y_1, _width, _height, _maxIters, _buf.data());
     });
 
     // ankerl::nanobench::Bench().run("VCL_MANDEL", [&] {
@@ -461,7 +398,7 @@ int main(){
 
     // ankerl::nanobench::Bench().run("std_simd_MANDEL", [&] {
     //     std::fill(_buf.begin(), _buf.end(), 0);
-    //     __mysimd_::mandelbrot<8>(x_0, y_0, x_1, y_1, _width, _height, _maxIters, _buf.data());
+    //     __std_simd_::mandelbrot<8>(x_0, y_0, x_1, y_1, _width, _height, _maxIters, _buf.data());
     // });
 
     // // ankerl::nanobench::Bench().run("VCL_MANDEL", [&] {
