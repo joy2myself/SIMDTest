@@ -145,7 +145,7 @@ template <typename _Tp,typename _Tpb,typename _Tpi>
 }// end namespace VCL
 
 
-namespace __mysimd_
+namespace __std_simd_
 {
 
 template<int N>
@@ -365,10 +365,10 @@ static void BM_Mandel_scalar(benchmark::State& state) {
 }//scalar bench function
 
 template <int N>
-static void BM_Mandel_gcc_std_simd(benchmark::State& state) {
+static void BM_Mandel_std_simd(benchmark::State& state) {
     std::fill(_buf.begin(), _buf.end(), 0);
     for (auto _ : state)
-        __mysimd_::mandelbrot<N>(x_0, y_0, x_1, y_1, _width, _height, _maxIters, _buf.data());
+        __std_simd_::mandelbrot<N>(x_0, y_0, x_1, y_1, _width, _height, _maxIters, _buf.data());
 }// mysimd bench function
 
 template <typename _Tp,typename _Tpb,typename _Tpi>
@@ -396,8 +396,8 @@ static void BM_Mandel_tsimd(benchmark::State& state) {
 
 BENCHMARK(BM_Mandel_scalar);
 
-BENCHMARK_TEMPLATE(BM_Mandel_gcc_std_simd, 4);
-BENCHMARK_TEMPLATE(BM_Mandel_gcc_std_simd, 8);
+BENCHMARK_TEMPLATE(BM_Mandel_std_simd, 4);
+BENCHMARK_TEMPLATE(BM_Mandel_std_simd, 8);
 
 BENCHMARK_TEMPLATE(BM_Mandel_VCL, Vec4f, Vec4fb, Vec4i);
 BENCHMARK_TEMPLATE(BM_Mandel_VCL, Vec8f, Vec8fb, Vec8i);

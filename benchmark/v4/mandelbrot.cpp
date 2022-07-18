@@ -147,7 +147,7 @@ template <typename _Tp,typename _Tpb,typename _Tpi>
 }// end namespace VCL
 
 
-namespace __mysimd_
+namespace __std_simd_
 {
 
 template<int N>
@@ -371,7 +371,7 @@ int main(){
 
     ankerl::nanobench::Bench().run("std_simd_MANDEL", [&] {
         std::fill(_buf.begin(), _buf.end(), 0);
-        __mysimd_::mandelbrot<4>(x_0, y_0, x_1, y_1, _width, _height, _maxIters, _buf.data());
+        __std_simd_::mandelbrot<4>(x_0, y_0, x_1, y_1, _width, _height, _maxIters, _buf.data());
     });
 
     // ankerl::nanobench::Bench().run("VCL_MANDEL", [&] {
@@ -398,7 +398,7 @@ int main(){
 
     // ankerl::nanobench::Bench().run("std_simd_MANDEL", [&] {
     //     std::fill(_buf.begin(), _buf.end(), 0);
-    //     __mysimd_::mandelbrot<8>(x_0, y_0, x_1, y_1, _width, _height, _maxIters, _buf.data());
+    //     __std_simd_::mandelbrot<8>(x_0, y_0, x_1, y_1, _width, _height, _maxIters, _buf.data());
     // });
 
     // // ankerl::nanobench::Bench().run("VCL_MANDEL", [&] {
