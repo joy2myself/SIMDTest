@@ -1,0 +1,16 @@
+cmake_minimum_required(VERSION 3.25)
+project(Bench)
+add_compile_options(-O2 -std=c++2a)
+
+
+add_subdirectory(./src/AXPY)
+add_subdirectory(./src/black_scholes)
+add_subdirectory(./src/conv_maxpooling)
+add_subdirectory(./src/De-quantization)
+add_subdirectory(./src/jacobi-2d)
+add_subdirectory(./src/julia)
+add_subdirectory(./src/mandelbrot)
+add_subdirectory(./src/nbody)
+add_subdirectory(./src/newton_fractal)
+add_subdirectory(./src/quadratic)
+add_subdirectory(./src/RGB2YUV)

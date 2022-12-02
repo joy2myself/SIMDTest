@@ -1,54 +1,109 @@
 
-# README
+# 数据并行编程库通用测试框架
 
-## 说明
+ 本通用测试框架是其他VecCore 是其他矢量化库之上的一个简单抽象层。它提供了一个独立于体系结构的 API，用于表达对数据的向量操作。然后可以将使用此 API 编写的代码分派到使用 Vc、std::simd 、highway等库实现的多个后端之一。这允许人们在 Vc 和 std::simd 等支持的平台上获得最佳性能，而不会失去对不受支持的体系结构（例如 PowerPC）的可移植性。可以切换不同后端而不需要更改用户代码。另一个优点是，与编译器intrinsics函数不同，可以为 SSE、AVX2、AVX512 等编译相同的代码，而无需修改。<br>
+目前所支持的benchmark有AXPY、blcakscholes、conv、maxpooling、De-quantization、jacobi2d、julia、mandelbrot、nbody、newton_fractal、quadratic和RGV2YUV 12个benchmark。
+ 
 
-注意在dev分支上提交benchmark
+## SIMD库支持
+目前本通用测试框架后端所支持的SIMD库如下，其中EVE和nsimd都用了
+c++20新特性，所以需要使用GCC版本在11.2.0之上：
 
-v2版本使用的是tsimd测试框架来测试的。
+- [Vc](https://github.com/VcDevel/Vc)
+- [higway](https://github.com/google/highway)
+- [xsimd](https://github.com/xtensor-stack/xsimd)
+- [nsimd](https://github.com/agenium-scale/nsimd)
+- [vcl](https://github.com/vectorclass)
+- [EVE](https://github.com/jfalcou/eve)
+- [tsimd](https://github.com/jeffamstutz/tsimd)
+- [MIPP](https://github.com/aff3ct/MIPP)
+- std::simd
 
-v3版本使用的是google benchmark测试框架来测试的。
+## 架构和指令集支持
+本测试框架的架构支持和指令集支持均取决于不同的SIMD后端是否支持。
+### 架构支持
 
-v4版本使用的是nanobench测试框架来测试的。
+- X86
+- ARM
+- PPC
+- RISCV
 
-目前最稳定的版本是使用nanobench的v4版本。
+### 指令集支持
+- sse
+- avx
+- avx2
+- avx512
+- fma
+- neno
+- sve
+- sve2
+- wasm-simd
+- altivec
+- vmx
+- vsx
+- amx
+- rvv
+- ...
 
-## 怎么测试？
 
-克隆之后，把submodule克隆下来
+## 怎么构建？
 
+```
+git clone git@yt.droid.ac.cn:panhaolin/simd-libraries-benchmark.git
+cd simd-libraries-benchmark
+git checkout v-1.0
+git submodule update --init --recursive
+cd benchmark/src/test_performance
+mkdir build
+cmake ..
+```
+构建成功后，可执行文件在
+_./benchmark/src/test_performance/build/XXX/bin/_
+目录下，其中
+_XXX_
+表示不同的benchmark目录。
+
+## Example
+
+benchmark/src 包含的用本测试框架所提供的 API 来编写的benchmark，用于比较不同后端在各种情况下的性能。下面我们展示了如何转换标量函数来计算 AXPY 以使用 SIMD 指令：
+
+### 标量版本
 ```cpp
-$git clone git@yt.droid.ac.cn:panhaolin/simd-libraries-benchmark.git
-$cd simd-libraries-benchmark
-$git checkout dev
-$git submodule update --init --recursive
+struct AXPY_SCALAR
+{
+ void operator()(ElemType a, ElemType *b, ElemType *c, ElemType *res)
+  {
+    for (int i = 0; i < ARRLENGTH; ++i)
+    {
+      res[i] = a * b[i] + c[i];
+    }
+  }
+};
 ```
 
-目前，v3版本和v4版本目录下有command.txt文件来描述运行命令。
-例如在v4中：
-
+### 用本测试框架的API编写的SIMD版本
 ```cpp
-//使用自己得库
-clang++ -O2 -march=corei7-avx -mavx2 -mfma -I../../simd_libraries/nanobench/src/include mandelbrot.cpp                                  \
-	-nostdinc++ -nostdlib++ -isystem /*PATH*/llvm-project/build/include/c++/v1 -L  /usr/lib -Wl,-rpath, /usr/lib                        \
-	-lc++ -std=c++20
-
-g++ -O2 -march=corei7-avx -mavx2 -mfma   -I../../simd_libraries/nanobench/src/include mandelbrot.cpp                                    \
-	-std=c++20 -nostdinc++ -nodefaultlibs -isystem /*PATH*/llvm-project/build/include/c++/v1 -L /usr/lib                                 \
-	-Wl,-rpath,/usr/lib -lc++ -lc++abi -lm -lc -lgcc_s -lgcc
-
-// *PATH*为你从llvm-project克隆下来存放的地址
-
-//使用标准库libstdc++也就是 std_simd
-
-g++ -O2 -std=c++20  -march=corei7-avx -mavx2 -mfma -I../../simd_libraries/nanobench/src/include mandelbrot.cpp
-
-clang++ -O2 -std=c++20  -march=corei7-avx -mavx2 -mfma -I../../simd_libraries/nanobench/src/include mandelbrot.cpp
-
+template<typename Vec, typename Tp> struct AXPY_SIMD
+{
+  void operator()(Tp a, Tp *x, Tp *y, Tp *res)
+  {
+    auto len = details::Len<Vec, Tp>();
+    std::size_t vec_size = ARRLENGTH - ARRLENGTH % len;
+    Vec x_simd, y_simd, res_simd;
+    for (std::size_t i = 0; i < vec_size; i += len)
+    {
+      details::Load_Aligned(x_simd, &x[i]);
+      details::Load_Aligned(y_simd, &y[i]);
+      res_simd = details::BroadCast<Vec, Tp>(a) * x_simd + y_simd;
+      details::Store_Aligned(res_simd, &res[i]);
+    }
+    for (std::size_t i = vec_size; i < ARRLENGTH; ++i)
+    {
+      res[i] = a * x[i] + y[i];
+    }
+  }
+};
 ```
 
-同理可以查看v3目录下的command.txt来确定google benchmark的运行命令。
-
-## 性能分析目录
-
-    主要是利用gperftools工具来查看函数调用情况以及调用过程中看哪些调用消耗时间最大，从而找到可以优化的点。
+## 相关工作
+与本项目工作相似的有Amadio所著的VecCore库，他的工作同样是考虑到有些SIMD库可能只对特定平台上有效，并不能跨平台地使用。所以通过把各个SIMD库作为不同的实现后端，根据需要来选择最合适的后端来实现程序的向量化。
