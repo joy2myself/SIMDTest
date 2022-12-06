@@ -1,37 +1,71 @@
 #include "../../../../include/core/nsimd_core.h"
 #include <nanobench.h>
-using ElemType = float;
+using ElemType = int32_t;
 
-const std::size_t ARRLENGTH = 256;
-const std::size_t LEN = 4;
-const std::size_t ITERATION = 500000;
+#define ARRLENGTH 32
+#define TSTEPS    16
 
-template<typename Vec, typename Tp> struct AXPY_SIMD
+///////////////////////parameters initialization///////////////////////
+
+const int n = ARRLENGTH;
+const int tsteps = TSTEPS;
+const std::size_t ITERATION = 5000;
+
+
+template<typename Vec, typename Tp> struct JACOBI_2D_SIMD
 {
-  void operator()(Tp a, Tp *x, Tp *y, Tp *res)
+  void kernel_jacobi_2d(int tsteps, int n, ElemType A[ARRLENGTH][ARRLENGTH], ElemType B[ARRLENGTH][ARRLENGTH])
   {
-    auto len = details::Len<Vec, Tp>();
-    std::size_t vec_size = ARRLENGTH - ARRLENGTH % len;
-    Vec x_simd, y_simd, res_simd;
-    for (std::size_t i = 0; i < vec_size; i += len)
+    std::size_t len = details::Len<Vec, Tp>();
+    int t, i, j;
+    Vec Aj_1, Aj, Aj1, Ai_1j, Ai1j;
+    Vec Bj_1, Bj, Bj1, Bi_1j, Bi1j;
+    for (t = 0; t < tsteps; t++)
     {
-      details::Load_Aligned(x_simd, &x[i]);
-      details::Load_Aligned(y_simd, &y[i]);
-      res_simd = details::BroadCast<Vec, Tp>(a) * x_simd + y_simd;
-      details::Store_Aligned(res_simd, &res[i]);
+      for (i = 1; i < n - 1; i++)
+      {
+        for (j = 1; j < n - 1; j += len)
+        {
+          details::Load_Unaligned(Aj_1, &A[i][j - 1]);
+          details::Load_Unaligned(Aj, &A[i][j]);
+          details::Load_Unaligned(Aj1, &A[i][j + 1]);
+          details::Load_Unaligned(Ai_1j, &A[i - 1][j]);
+          details::Load_Unaligned(Ai1j, &A[i + 1][j]);
+
+          Bj = details::BroadCast<Vec, Tp>(Tp(0.2)) * (Aj + Aj_1 + Aj1 + Ai1j + Ai_1j);
+
+          details::Store_Unaligned<Vec, Tp>(Bj, &B[i][j]);
+        }
+      }
+      for (i = 1; i < n - 1; i++)
+      {
+        for (j = 1; j < n - 1; j += len)
+        {
+
+          details::Load_Unaligned(Bj_1, &B[i][j - 1]);
+          details::Load_Unaligned(Bj, &B[i][j]);
+          details::Load_Unaligned(Bj1, &B[i][j + 1]);
+          details::Load_Unaligned(Bi_1j, &B[i - 1][j]);
+          details::Load_Unaligned(Bi1j, &B[i + 1][j]);
+
+          Aj = details::BroadCast<Vec, Tp>(Tp(0.2)) * (Bj + Bj_1 + Bj1 + Bi1j + Bi_1j);
+
+          details::Store_Unaligned<Vec, Tp>(Aj, &A[i][j]);
+        }
+      }
     }
-    for (std::size_t i = vec_size; i < ARRLENGTH; ++i)
-    {
-      res[i] = a * x[i] + y[i];
-    }
+  }
+  void operator()(int tsteps, int n, ElemType A[ARRLENGTH][ARRLENGTH], ElemType B[ARRLENGTH][ARRLENGTH])
+  {
+    kernel_jacobi_2d(tsteps, n, A, B);
   }
 };
 
-void test_nsimd(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res)
+void test_nsimd(ankerl::nanobench::Bench &bench, int tsteps, int n, ElemType A[ARRLENGTH][ARRLENGTH], ElemType B[ARRLENGTH][ARRLENGTH])
 {
-  AXPY_SIMD<nsimd_t_v_native<ElemType>, ElemType> func;
+  JACOBI_2D_SIMD<nsimd_t_v_native<ElemType>, ElemType> func;
   bench.minEpochIterations(ITERATION).run("nsimd", [&]() {
-    func(a, x, y, res);
+    func(tsteps, n, A, B);
     ankerl::nanobench::doNotOptimizeAway(func);
   });
 }

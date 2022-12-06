@@ -2,42 +2,45 @@
 #include <cstdlib>
 #include <nanobench.h>
 
-using ElemType = float;
+using ElemType = int32_t;
 
-const std::size_t ARRLENGTH = 256;
-const std::size_t LEN = 4;
-const std::size_t ITERATION = 500000;
+///////////////////////parameters initialization////////////////////////
 
-ElemType a;
-ElemType x[ARRLENGTH]{ 0 };
-ElemType y[ARRLENGTH]{ 0 };
-ElemType res[ARRLENGTH]{ 0 };
+const std::size_t ITERATION = 5000;
 
-void test_scalar(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res);
-
-#ifndef NSIMD_INEFFECTIVE
-void test_nsimd(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res);
-#endif
-
-void test_std_simd(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res);
-void test_vc(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res);
-void test_tsimd(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res);
-void test_vcl(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res);
-void test_highway(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res);
-void test_mipp(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res);
-void test_eve(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res);
-void test_xsimd(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res);
+ElemType dct[64]{ 0 };
+ElemType dequant_mf[6][64]{ 0 };
+ElemType res[64]{ 0 };
+ElemType i_qp = rand() % 73;
 
 void Initial()
 {
-  a = ElemType(rand());
-  for (size_t i = 0; i < ARRLENGTH; ++i)
+  for (int i = 0; i < 6; ++i)
   {
-    x[i] = ElemType(rand());
-    y[i] = ElemType(rand());
-    res[i] = 0.f;
+    for (int j = 0; j < 64; ++j)
+      dequant_mf[i][j] = rand();
+  }
+
+  for (int i = 0; i < 64; ++i)
+  {
+    dct[i] = rand();
   }
 }
+
+void test_scalar(ankerl::nanobench::Bench &bench, ElemType dct[64], ElemType dequant_mf[6][64], ElemType i_qp, ElemType res[64]);
+
+#ifndef NSIMD_INEFFECTIVE
+void test_nsimd(ankerl::nanobench::Bench &bench, ElemType dct[64], ElemType dequant_mf[6][64], ElemType i_qp, ElemType res[64]);
+#endif
+
+void test_std_simd(ankerl::nanobench::Bench &bench, ElemType dct[64], ElemType dequant_mf[6][64], ElemType i_qp, ElemType res[64]);
+void test_vc(ankerl::nanobench::Bench &bench, ElemType dct[64], ElemType dequant_mf[6][64], ElemType i_qp, ElemType res[64]);
+void test_tsimd(ankerl::nanobench::Bench &bench, ElemType dct[64], ElemType dequant_mf[6][64], ElemType i_qp, ElemType res[64]);
+void test_vcl(ankerl::nanobench::Bench &bench, ElemType dct[64], ElemType dequant_mf[6][64], ElemType i_qp, ElemType res[64]);
+void test_highway(ankerl::nanobench::Bench &bench, ElemType dct[64], ElemType dequant_mf[6][64], ElemType i_qp, ElemType res[64]);
+void test_mipp(ankerl::nanobench::Bench &bench, ElemType dct[64], ElemType dequant_mf[6][64], ElemType i_qp, ElemType res[64]);
+void test_eve(ankerl::nanobench::Bench &bench, ElemType dct[64], ElemType dequant_mf[6][64], ElemType i_qp, ElemType res[64]);
+void test_xsimd(ankerl::nanobench::Bench &bench, ElemType dct[64], ElemType dequant_mf[6][64], ElemType i_qp, ElemType res[64]);
 
 int main()
 {
@@ -46,18 +49,18 @@ int main()
     b_native.title("De_quantization_TEST_NATIVE").unit("De_quantization_NATIVE").warmup(100).relative(true);
     b_native.performanceCounters(true);
 
-    test_scalar(b_native, a, x, y, res);
+    test_scalar(b_native, dct, dequant_mf, i_qp, res);
 
     #ifndef NSIMD_INEFFECTIVE
-    test_nsimd(b_native, a, x, y, res);
+    test_nsimd(b_native, dct, dequant_mf, i_qp, res);
     #endif
     
-    test_std_simd(b_native, a, x, y, res);
-    test_vc(b_native, a, x, y, res);
-    test_highway(b_native, a, x, y, res);
-    test_tsimd(b_native, a, x, y, res);
-    test_mipp(b_native, a, x, y, res);
-    test_xsimd(b_native, a, x, y, res);
-    test_vcl(b_native, a, x, y, res);
-    test_eve(b_native, a, x, y, res);
+    test_eve(b_native, dct, dequant_mf, i_qp, res);
+    test_std_simd(b_native, dct, dequant_mf, i_qp, res);
+    test_vc(b_native, dct, dequant_mf, i_qp, res);
+    test_highway(b_native, dct, dequant_mf, i_qp, res);
+    test_tsimd(b_native, dct, dequant_mf, i_qp, res);
+    test_xsimd(b_native, dct, dequant_mf, i_qp, res);
+    test_vcl(b_native, dct, dequant_mf, i_qp, res);
+    test_mipp(b_native, dct, dequant_mf, i_qp, res);
 }

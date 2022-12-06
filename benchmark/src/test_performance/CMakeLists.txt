@@ -5,7 +5,7 @@ add_compile_options(-O2 -std=c++2a)
 
 add_subdirectory(./src/AXPY)
 add_subdirectory(./src/black_scholes)
-add_subdirectory(./src/conv_maxpooling)
+# add_subdirectory(./src/conv_maxpooling)
 add_subdirectory(./src/De-quantization)
 add_subdirectory(./src/jacobi-2d)
 add_subdirectory(./src/julia)

@@ -2,36 +2,48 @@
 #include <nanobench.h>
 using ElemType = float;
 
-const std::size_t ARRLENGTH = 256;
-const std::size_t LEN = 4;
-const std::size_t ITERATION = 500000;
+///////////////////////parameters initialization////////////////////////
 
-template<typename Vec, typename Tp> struct AXPY_SIMD
+const std::size_t ARRLENGTH = 512;
+const std::size_t LEN = 4;
+const std::size_t ITERATION = 5000000;
+
+
+template<typename Vec, typename Tp> struct RGB2YUV_SIMD
 {
-  void operator()(Tp a, Tp *x, Tp *y, Tp *res)
+  void rgb2yuv(Tp *ra, Tp *ga, Tp *ba, Tp *ya, Tp *ua, Tp *va)
   {
+    Vec a, b, c, y, u, v;
     auto len = details::Len<Vec, Tp>();
-    std::size_t vec_size = ARRLENGTH - ARRLENGTH % len;
-    Vec x_simd, y_simd, res_simd;
-    for (std::size_t i = 0; i < vec_size; i += len)
+    for (int i = 0; i < ARRLENGTH; i += len)
     {
-      details::Load_Aligned(x_simd, &x[i]);
-      details::Load_Aligned(y_simd, &y[i]);
-      res_simd = details::BroadCast<Vec, Tp>(a) * x_simd + y_simd;
-      details::Store_Aligned(res_simd, &res[i]);
+      details::Load_Aligned(a, &ra[i]);
+      details::Load_Aligned(b, &ga[i]);
+      details::Load_Aligned(c, &ba[i]);
+      y = details::BroadCast<Vec, Tp>(Tp(0.299)) * a + details::BroadCast<Vec, Tp>(Tp(0.584)) * b +
+          details::BroadCast<Vec, Tp>(Tp(0.114)) * c;
+      u = details::BroadCast<Vec, Tp>(Tp(-0.14713)) * a - details::BroadCast<Vec, Tp>(Tp(0.28886)) * b +
+          details::BroadCast<Vec, Tp>(Tp(0.436)) * c;
+      v = details::BroadCast<Vec, Tp>(Tp(0.615)) * a - details::BroadCast<Vec, Tp>(Tp(0.51499)) * b -
+          details::BroadCast<Vec, Tp>(Tp(0.10001)) * c;
+      details::Store_Aligned(y, &ya[i]);
+      details::Store_Aligned(u, &ua[i]);
+      details::Store_Aligned(v, &va[i]);
     }
-    for (std::size_t i = vec_size; i < ARRLENGTH; ++i)
-    {
-      res[i] = a * x[i] + y[i];
-    }
+  }
+
+  void operator()(Tp *ra, Tp *ga, Tp *ba, Tp *ya, Tp *ua, Tp *va)
+  {
+    rgb2yuv(ra, ga, ba, ya, ua, va);
   }
 };
 
-void test_xsimd(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res)
+
+void test_xsimd(ankerl::nanobench::Bench &bench, ElemType *ra, ElemType *ga, ElemType *ba, ElemType *ya, ElemType *ua, ElemType *va)
 {
-  AXPY_SIMD<xsimd_t_v_native<ElemType>, ElemType> func;
+  RGB2YUV_SIMD<xsimd_t_v_native<ElemType>, ElemType> func;
   bench.minEpochIterations(ITERATION).run("xsimd", [&]() {
-    func(a, x, y, res);
+    func(ra, ga, ba, ya, ua, va);
     ankerl::nanobench::doNotOptimizeAway(func);
   });
 }

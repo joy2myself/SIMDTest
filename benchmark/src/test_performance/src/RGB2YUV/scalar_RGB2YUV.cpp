@@ -6,31 +6,47 @@ const std::size_t ARRLENGTH = 256;
 const std::size_t LEN = 4;
 const std::size_t ITERATION = 500000;
 
-struct AXPY_SCALAR
+struct RGB2YUV_SCALAR
 {
 #ifdef OpenAutoOptimize
-  __attribute__((optimize("O2", "tree-vectorize"))) void operator()(ElemType a, ElemType *b, ElemType *c, ElemType *res)
+#pragma GCC push_options
+#pragma GCC optimize("O2,tree-vectorize")
+  void rgb2yuv(ElemType *ra, ElemType *ga, ElemType *ba, ElemType *ya, ElemType *ua, ElemType *va)
   {
-    for (int i = 0; i < ARRLENGTH; ++i)
+    for (int i = 0; i < ARRLENGTH; i++)
     {
-      res[i] = a * b[i] + c[i];
+      ya[i] = 0.299f * ra[i] + 0.584f * ga[i] + 0.114f * ba[i];
+      ua[i] = -0.14713f * ra[i] - 0.28886f * ga[i] + 0.436f * ba[i];
+      va[i] = 0.615f * ra[i] - 0.51499f * ga[i] - 0.10001f * ba[i];
     }
   }
-#else
-  void operator()(ElemType a, ElemType *b, ElemType *c, ElemType *res)
+  void operator()(ElemType *ra, ElemType *ga, ElemType *ba, ElemType *ya, ElemType *ua, ElemType *va)
   {
-    for (int i = 0; i < ARRLENGTH; ++i)
+    rgb2yuv(ra, ga, ba, ya, ua, va);
+  }
+#pragma GCC pop_options
+#else
+  void rgb2yuv(ElemType *ra, ElemType *ga, ElemType *ba, ElemType *ya, ElemType *ua, ElemType *va)
+  {
+    for (int i = 0; i < ARRLENGTH; i++)
     {
-      res[i] = a * b[i] + c[i];
+      ya[i] = 0.299f * ra[i] + 0.584f * ga[i] + 0.114f * ba[i];
+      ua[i] = -0.14713f * ra[i] - 0.28886f * ga[i] + 0.436f * ba[i];
+      va[i] = 0.615f * ra[i] - 0.51499f * ga[i] - 0.10001f * ba[i];
     }
+  }
+  void operator()(ElemType *ra, ElemType *ga, ElemType *ba, ElemType *ya, ElemType *ua, ElemType *va)
+  {
+    rgb2yuv(ra, ga, ba, ya, ua, va);
   }
 #endif
 };
 
-void test_scalar(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res)
+
+void test_scalar(ankerl::nanobench::Bench &bench, ElemType *ra, ElemType *ga, ElemType *ba, ElemType *ya, ElemType *ua, ElemType *va)
 { 
-  AXPY_SCALAR f;
+  RGB2YUV_SCALAR f;
   bench.minEpochIterations(ITERATION).run("scalar", [&]() {
-    f(a, x, y, res);
+    f(ra, ga, ba, ya, ua, va);
     ankerl::nanobench::doNotOptimizeAway(f);});
 }

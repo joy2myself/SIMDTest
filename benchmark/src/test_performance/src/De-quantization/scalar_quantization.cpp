@@ -1,36 +1,67 @@
 #include <cstdlib>
 #include <nanobench.h>
-using ElemType = float;
+using ElemType = int32_t;
 
 const std::size_t ARRLENGTH = 256;
 const std::size_t LEN = 4;
 const std::size_t ITERATION = 500000;
 
-struct AXPY_SCALAR
+struct DE_QUAN_SCALAR
 {
 #ifdef OpenAutoOptimize
-  __attribute__((optimize("O2", "tree-vectorize"))) void operator()(ElemType a, ElemType *b, ElemType *c, ElemType *res)
+#pragma GCC push_options
+#pragma GCC optimize("O2,tree-vectorize")
+  void dequant_8x8(ElemType dct[64], ElemType dequant_mf[6][64], ElemType i_qp, ElemType res[64])
   {
-    for (int i = 0; i < ARRLENGTH; ++i)
+    const ElemType i_mf = i_qp % 6;
+    const ElemType i_qbits = i_qp / 6 - 6;
+
+    if (i_qbits >= 0)
     {
-      res[i] = a * b[i] + c[i];
+      for (int i = 0; i < 64; i++)
+        res[i] = (dct[i] * dequant_mf[i_mf][i]) << i_qbits;
+    }
+    else
+    {
+      const int f = 1 << (-i_qbits - 1);
+      for (int i = 0; i < 64; i++)
+        res[i] = (dct[i] * dequant_mf[i_mf][i] + f) >> (-i_qbits);
     }
   }
-#else
-  void operator()(ElemType a, ElemType *b, ElemType *c, ElemType *res)
+  void operator()(ElemType dct[64], ElemType dequant_mf[6][64], ElemType i_qp, ElemType res[64])
   {
-    for (int i = 0; i < ARRLENGTH; ++i)
+    dequant_8x8(dct, dequant_mf, i_qp, res);
+  }
+#pragma GCC pop_options
+#else
+  void dequant_8x8(ElemType dct[64], ElemType dequant_mf[6][64], ElemType i_qp, ElemType res[64])
+  {
+    const ElemType i_mf = i_qp % 6;
+    const ElemType i_qbits = i_qp / 6 - 6;
+
+    if (i_qbits >= 0)
     {
-      res[i] = a * b[i] + c[i];
+      for (int i = 0; i < 64; i++)
+        res[i] = (dct[i] * dequant_mf[i_mf][i]) << i_qbits;
     }
+    else
+    {
+      const ElemType f = 1 << (-i_qbits - 1);
+      for (int i = 0; i < 64; i++)
+        res[i] = (dct[i] * dequant_mf[i_mf][i] + f) >> (-i_qbits);
+    }
+  }
+  void operator()(ElemType dct[64], ElemType dequant_mf[6][64], ElemType i_qp, ElemType res[64])
+  {
+    dequant_8x8(dct, dequant_mf, i_qp, res);
   }
 #endif
 };
 
-void test_scalar(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res)
+void test_scalar(ankerl::nanobench::Bench &bench, ElemType dct[64], ElemType dequant_mf[6][64], ElemType i_qp, ElemType res[64])
 { 
-  AXPY_SCALAR f;
+  DE_QUAN_SCALAR f;
   bench.minEpochIterations(ITERATION).run("scalar", [&]() {
-    f(a, x, y, res);
+    f(dct, dequant_mf, i_qp, res);
     ankerl::nanobench::doNotOptimizeAway(f);});
 }

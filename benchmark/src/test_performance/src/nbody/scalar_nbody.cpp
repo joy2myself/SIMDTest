@@ -1,36 +1,81 @@
 #include <cstdlib>
 #include <nanobench.h>
 using ElemType = float;
+#include <cmath>
+#include <cstdio>
+#include <memory>
+#include <numeric>
+#include <random>
 
-const std::size_t ARRLENGTH = 256;
-const std::size_t LEN = 4;
-const std::size_t ITERATION = 500000;
 
-struct AXPY_SCALAR
+constexpr auto kNruns = 1;
+constexpr auto kN = 1024;
+
+constexpr float eps2 = 0.01f;
+constexpr float timeStep = 0.0001f;
+
+struct NBODY_SCALAR
 {
-#ifdef OpenAutoOptimize
-  __attribute__((optimize("O2", "tree-vectorize"))) void operator()(ElemType a, ElemType *b, ElemType *c, ElemType *res)
+  inline void pPInteraction(
+      float p1posx,
+      float p1posy,
+      float p1posz,
+      float &p1velx,
+      float &p1vely,
+      float &p1velz,
+      float p2posx,
+      float p2posy,
+      float p2posz,
+      float p2mass)
   {
-    for (int i = 0; i < ARRLENGTH; ++i)
+    const float xdistance = p1posx - p2posx;
+    const float ydistance = p1posy - p2posy;
+    const float zdistance = p1posz - p2posz;
+    const float xdistanceSqr = xdistance * xdistance;
+    const float ydistanceSqr = ydistance * ydistance;
+    const float zdistanceSqr = zdistance * zdistance;
+    const float distSqr = eps2 + xdistanceSqr + ydistanceSqr + zdistanceSqr;
+    const float distSixth = distSqr * distSqr * distSqr;
+    const float invDistCube = 1.0f / std::sqrt(distSixth);
+    const float sts = p2mass * invDistCube * timeStep;
+    p1velx += xdistanceSqr * sts;
+    p1vely += ydistanceSqr * sts;
+    p1velz += zdistanceSqr * sts;
+  }
+  void TestNBody(float *posx, float *posy, float *posz, float *velx, float *vely, float *velz, float *mass, size_t kN)
+  {
+
+    for (std::size_t i = 0; i < kN; i++)
     {
-      res[i] = a * b[i] + c[i];
+      const float piposx = posx[i];
+      const float piposy = posy[i];
+      const float piposz = posz[i];
+      float pivelx = velx[i];
+      float pively = vely[i];
+      float pivelz = velz[i];
+      for (std::size_t j = 0; j < kN; j++)
+        pPInteraction(piposx, piposy, piposz, pivelx, pively, pivelz, posx[j], posy[j], posz[j], mass[j]);
+      velx[i] = pivelx;
+      vely[i] = pively;
+      velz[i] = pivelz;
+    }
+    for (std::size_t i = 0; i < kN; i++)
+    {
+      posx[i] += velx[i] * timeStep;
+      posy[i] += vely[i] * timeStep;
+      posz[i] += velz[i] * timeStep;
     }
   }
-#else
-  void operator()(ElemType a, ElemType *b, ElemType *c, ElemType *res)
+  void operator()(float *posx, float *posy, float *posz, float *velx, float *vely, float *velz, float *mass, size_t kN)
   {
-    for (int i = 0; i < ARRLENGTH; ++i)
-    {
-      res[i] = a * b[i] + c[i];
-    }
+    TestNBody(posx, posy, posz, velx, vely, velz, mass, kN);
   }
-#endif
 };
 
-void test_scalar(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res)
+void test_scalar(ankerl::nanobench::Bench &bench, ElemType *posx, ElemType *posy, ElemType *posz, ElemType *velx, ElemType *vely, ElemType *velz, ElemType *mass, size_t kN)
 { 
-  AXPY_SCALAR f;
-  bench.minEpochIterations(ITERATION).run("scalar", [&]() {
-    f(a, x, y, res);
+  NBODY_SCALAR f;
+  bench.minEpochIterations(100).run("scalar", [&]() {
+    f(posx, posy, posz, velx, vely, velz, mass, kN);
     ankerl::nanobench::doNotOptimizeAway(f);});
 }

@@ -2,36 +2,70 @@
 #include <nanobench.h>
 using ElemType = float;
 
-const std::size_t ARRLENGTH = 256;
-const std::size_t LEN = 4;
-const std::size_t ITERATION = 500000;
+///////////////////////parameters initialization////////////////////////
 
-template<typename Vec, typename Tp> struct AXPY_SIMD
+template<typename Vec, typename Mask, typename Tp> struct JULIA_SIMD
 {
-  void operator()(Tp a, Tp *x, Tp *y, Tp *res)
+  void julia(Tp xmin, Tp xmax, size_t nx, Tp ymin, Tp ymax, size_t ny, size_t max_iter, unsigned char *image, Tp real, Tp im)
   {
-    auto len = details::Len<Vec, Tp>();
-    std::size_t vec_size = ARRLENGTH - ARRLENGTH % len;
-    Vec x_simd, y_simd, res_simd;
-    for (std::size_t i = 0; i < vec_size; i += len)
+    std::size_t len = details::Len<Vec, Tp>();
+
+    Tp index[len]{ 0 };
+    for (size_t i = 0; i < len; ++i)
+      index[i] = i;
+    Vec iota;
+
+    details::Store_Aligned(iota, index);
+
+    Vec dx = details::BroadCast<Vec, Tp>(Tp((xmax - xmin) / nx));
+    Vec dy = details::BroadCast<Vec, Tp>(Tp((ymax - ymin) / ny));
+    Vec dyv = iota * dy;
+
+    for (int i = 0; i < nx; ++i)
     {
-      details::Load_Aligned(x_simd, &x[i]);
-      details::Load_Aligned(y_simd, &y[i]);
-      res_simd = details::BroadCast<Vec, Tp>(a) * x_simd + y_simd;
-      details::Store_Aligned(res_simd, &res[i]);
+      for (int j = 0; j < ny; j += len)
+      {
+        int k = 0;
+        Vec x = details::BroadCast<Vec, Tp>(Tp(xmin)) + details::BroadCast<Vec, Tp>(Tp(i)) * dx;
+        Vec cr = details::BroadCast<Vec, Tp>(Tp(real));
+        Vec zr = x;
+        Vec y = details::BroadCast<Vec, Tp>(Tp(ymin)) + details::BroadCast<Vec, Tp>(Tp(j)) * dy + dyv;
+        Vec ci = details::BroadCast<Vec, Tp>(Tp(im)); 
+        Vec zi = y;
+
+        Vec kv = details::BroadCast<Vec, Tp>(Tp(0));
+        Mask m = details::BroadCast<Mask, Tp>(true);
+
+        do
+        {
+          x = zr * zr - zi * zi + cr;
+          y = details::BroadCast<Vec, Tp>(Tp(2.f)) * zr * zi + ci;
+
+          zr = details::Select<Mask, Vec, Tp>(m, x, zr);
+          zi = details::Select<Mask, Vec, Tp>(m, y, zi);
+          kv = details::Select<Mask, Vec, Tp>(m, details::BroadCast<Vec, Tp>(Tp(++k)), kv);
+
+          m = zr * zr + zi * zi < details::BroadCast<Vec, Tp>(Tp(4.f));
+        } while (k < max_iter && details::All<Tp>(m));
+
+        for (size_t k = 0; k < len; ++k)
+          image[ny * i + j + k] = (unsigned char) details::Get<Vec, Tp>(kv, k);
+      }
     }
-    for (std::size_t i = vec_size; i < ARRLENGTH; ++i)
-    {
-      res[i] = a * x[i] + y[i];
-    }
+  }
+
+  void
+  operator()(Tp xmin, Tp xmax, size_t nx, Tp ymin, Tp ymax, size_t ny, size_t max_iter, unsigned char *image, Tp real, Tp im)
+  {
+    julia(xmin, xmax, nx, ymin, ymax, ny, max_iter, image, real, im);
   }
 };
 
-void test_mipp(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res)
+void test_mipp(ankerl::nanobench::Bench &bench, ElemType xmin, ElemType xmax, size_t nx, ElemType ymin, ElemType ymax, size_t ny, size_t max_iter, unsigned char *image, ElemType real, ElemType im)
 {
-  AXPY_SIMD<mipp_t_v_native<ElemType>, ElemType> func;
-  bench.minEpochIterations(ITERATION).run("mipp", [&]() {
-    func(a, x, y, res);
+  JULIA_SIMD<mipp_t_v_native<ElemType>, mipp_t_m_native<ElemType>, ElemType> func;
+  bench.minEpochIterations(5).run("mipp", [&]() {
+    func(xmin, xmax, nx, ymin, ymax, ny, max_iter, image, real, im);
     ankerl::nanobench::doNotOptimizeAway(func);
   });
 }

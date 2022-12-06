@@ -2,36 +2,74 @@
 #include <nanobench.h>
 using ElemType = float;
 
-const std::size_t ARRLENGTH = 256;
-const std::size_t LEN = 4;
-const std::size_t ITERATION = 500000;
+///////////////////////parameters initialization////////////////////////
 
-template<typename Vec, typename Tp> struct AXPY_SIMD
+const std::size_t ARRLENGTH = 128 * 1024;
+const std::size_t LEN = 4;
+const std::size_t ITERATION = 5;
+
+template<typename Vec, typename Tp> struct BLACK_SCHOLES_SIMD
 {
-  void operator()(Tp a, Tp *x, Tp *y, Tp *res)
+  Vec CND(Vec &X)
   {
-    auto len = details::Len<Vec, Tp>();
-    std::size_t vec_size = ARRLENGTH - ARRLENGTH % len;
-    Vec x_simd, y_simd, res_simd;
-    for (std::size_t i = 0; i < vec_size; i += len)
+    Vec L = details::Fabs<Tp>(X);
+
+    Vec k = details::BroadCast<Vec, Tp>(Tp(1.f)) /
+            (details::BroadCast<Vec, Tp>(Tp(1.f)) + details::BroadCast<Vec, Tp>(Tp(0.2316419f)) * L);
+
+    Vec k2 = k * k;
+    Vec k3 = k2 * k;
+    Vec k4 = k2 * k2;
+    Vec k5 = k3 * k2;
+
+    const Vec invSqrt2Pi = details::BroadCast<Vec, Tp>(Tp(0.39894228040f));
+    Vec w =
+        (details::BroadCast<Vec, Tp>(Tp(0.31938153f)) * k - details::BroadCast<Vec, Tp>(Tp(0.356563782f)) * k2 +
+         details::BroadCast<Vec, Tp>(Tp(1.781477937f)) * k3 + details::BroadCast<Vec, Tp>(Tp(-1.821255978f)) * k4 +
+         details::BroadCast<Vec, Tp>(Tp(1.330274429f)) * k5);
+
+    w *= invSqrt2Pi * details::Exp<Tp>(details::BroadCast<Vec, Tp>(Tp(-1)) * L * L * details::BroadCast<Vec, Tp>(Tp(.5f)));
+
+    auto active = X > details::BroadCast<Vec, Tp>(Tp(0.f));
+
+    w = details::Select<decltype(active), Vec, Tp>(active, details::BroadCast<Vec, Tp>(Tp(1.f)) - w, w);
+    return w;
+  }
+
+  void black_scholes_serial(ElemType *Sa, ElemType *Xa, ElemType *Ta, ElemType *ra, ElemType *va, ElemType *result, const int &count)
+  {
+    std::size_t len = details::Len<Vec, Tp>();
+    for (std::size_t i = 0; i < ARRLENGTH; i += len)
     {
-      details::Load_Aligned(x_simd, &x[i]);
-      details::Load_Aligned(y_simd, &y[i]);
-      res_simd = details::BroadCast<Vec, Tp>(a) * x_simd + y_simd;
-      details::Store_Aligned(res_simd, &res[i]);
+      Vec S, X, T, r, v;
+
+      details::Load_Unaligned(S, &Sa[i]);
+      details::Load_Unaligned(T, &Ta[i]);
+      details::Load_Unaligned(X, &Xa[i]);
+      details::Load_Unaligned(r, &ra[i]);
+      details::Load_Unaligned(v, &va[i]);
+
+      Vec d1 =
+          (details::Log<Tp>(S / X) + (r + v * v * details::BroadCast<Vec, Tp>(Tp(.5f))) * T) / (v * details::Sqrt<Tp>(T));
+      Vec d2 = d1 - v * details::Sqrt<Tp>(T);
+
+      Vec res = S * CND(d1) - X * details::Exp<Tp>(details::BroadCast<Vec, Tp>(Tp(-1)) * r * T) * CND(d2);
+      details::Store_Unaligned(res, &result[i]);
     }
-    for (std::size_t i = vec_size; i < ARRLENGTH; ++i)
-    {
-      res[i] = a * x[i] + y[i];
-    }
+  }
+
+  void operator()(ElemType *Sa, ElemType *Xa, ElemType *Ta, ElemType *ra, ElemType *va, ElemType *result, const int &count)
+  {
+    black_scholes_serial(Sa, Xa, Ta, ra, va, result, count);
   }
 };
 
-void test_std_simd(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res)
+
+void test_std_simd(ankerl::nanobench::Bench &bench, ElemType *Sa, ElemType *Xa, ElemType *Ta, ElemType *ra, ElemType *va, ElemType *result, const int &count)
 {
-  AXPY_SIMD<std_simd_t_v_native<ElemType>, ElemType> func;
+  BLACK_SCHOLES_SIMD<std_simd_t_v_native<ElemType>, ElemType> func;
   bench.minEpochIterations(ITERATION).run("std_simd", [&]() {
-    func(a, x, y, res);
+    func(Sa, Xa, Ta, ra, va, result, count);
     ankerl::nanobench::doNotOptimizeAway(func);
   });
 }

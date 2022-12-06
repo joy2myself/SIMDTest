@@ -2,41 +2,43 @@
 #include <cstdlib>
 #include <nanobench.h>
 
-using ElemType = float;
+using ElemType = int32_t;
 
-const std::size_t ARRLENGTH = 256;
-const std::size_t LEN = 4;
-const std::size_t ITERATION = 500000;
+#define ARRLENGTH 32
+#define TSTEPS    16
 
-ElemType a;
-ElemType x[ARRLENGTH]{ 0 };
-ElemType y[ARRLENGTH]{ 0 };
-ElemType res[ARRLENGTH]{ 0 };
+const int n = ARRLENGTH;
+const int tsteps = TSTEPS;
+const std::size_t ITERATION = 5000;
 
-void test_scalar(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res);
+ElemType A[ARRLENGTH][ARRLENGTH];
+ElemType B[ARRLENGTH][ARRLENGTH];
+
+void test_scalar(ankerl::nanobench::Bench &bench, int tsteps, int n, ElemType A[ARRLENGTH][ARRLENGTH], ElemType B[ARRLENGTH][ARRLENGTH]);
 
 #ifndef NSIMD_INEFFECTIVE
-void test_nsimd(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res);
+void test_nsimd(ankerl::nanobench::Bench &bench, int tsteps, int n, ElemType A[ARRLENGTH][ARRLENGTH], ElemType B[ARRLENGTH][ARRLENGTH]);
 #endif
 
-void test_std_simd(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res);
-void test_vc(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res);
-void test_tsimd(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res);
-void test_vcl(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res);
-void test_highway(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res);
-void test_mipp(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res);
-void test_eve(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res);
-void test_xsimd(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res);
+void test_std_simd(ankerl::nanobench::Bench &bench, int tsteps, int n, ElemType A[ARRLENGTH][ARRLENGTH], ElemType B[ARRLENGTH][ARRLENGTH]);
+void test_vc(ankerl::nanobench::Bench &bench, int tsteps, int n, ElemType A[ARRLENGTH][ARRLENGTH], ElemType B[ARRLENGTH][ARRLENGTH]);
+void test_tsimd(ankerl::nanobench::Bench &bench, int tsteps, int n, ElemType A[ARRLENGTH][ARRLENGTH], ElemType B[ARRLENGTH][ARRLENGTH]);
+void test_vcl(ankerl::nanobench::Bench &bench, int tsteps, int n, ElemType A[ARRLENGTH][ARRLENGTH], ElemType B[ARRLENGTH][ARRLENGTH]);
+void test_highway(ankerl::nanobench::Bench &bench, int tsteps, int n, ElemType A[ARRLENGTH][ARRLENGTH], ElemType B[ARRLENGTH][ARRLENGTH]);
+void test_mipp(ankerl::nanobench::Bench &bench, int tsteps, int n, ElemType A[ARRLENGTH][ARRLENGTH], ElemType B[ARRLENGTH][ARRLENGTH]);
+void test_eve(ankerl::nanobench::Bench &bench, int tsteps, int n, ElemType A[ARRLENGTH][ARRLENGTH], ElemType B[ARRLENGTH][ARRLENGTH]);
+void test_xsimd(ankerl::nanobench::Bench &bench, int tsteps, int n, ElemType A[ARRLENGTH][ARRLENGTH], ElemType B[ARRLENGTH][ARRLENGTH]);
 
 void Initial()
 {
-  a = ElemType(rand());
-  for (size_t i = 0; i < ARRLENGTH; ++i)
-  {
-    x[i] = ElemType(rand());
-    y[i] = ElemType(rand());
-    res[i] = 0.f;
-  }
+  int i, j;
+
+  for (i = 0; i < n; i++)
+    for (j = 0; j < n; j++)
+    {
+      A[i][j] = ((ElemType)i * (j + 2) + 2) / n;
+      B[i][j] = ((ElemType)i * (j + 3) + 3) / n;
+    }
 }
 
 int main()
@@ -47,18 +49,18 @@ int main()
     b_native.title("jacobi2d_TEST_NATIVE").unit("jacobi2d_NATIVE").warmup(100).relative(true);
     b_native.performanceCounters(true);
 
-    test_scalar(b_native, a, x, y, res);
+    test_scalar(b_native, tsteps, n, A, B);
 
     #ifndef NSIMD_INEFFECTIVE
-    test_nsimd(b_native, a, x, y, res);
+    test_nsimd(b_native, tsteps, n, A, B);
     #endif
     
-    test_std_simd(b_native, a, x, y, res);
-    test_vc(b_native, a, x, y, res);
-    test_highway(b_native, a, x, y, res);
-    test_tsimd(b_native, a, x, y, res);
-    test_mipp(b_native, a, x, y, res);
-    test_xsimd(b_native, a, x, y, res);
-    test_vcl(b_native, a, x, y, res);
-    test_eve(b_native, a, x, y, res);
+    test_std_simd(b_native, tsteps, n, A, B);
+    test_vc(b_native, tsteps, n, A, B);
+    test_highway(b_native, tsteps, n, A, B);
+    test_tsimd(b_native, tsteps, n, A, B);
+    test_mipp(b_native, tsteps, n, A, B);
+    test_xsimd(b_native, tsteps, n, A, B);
+    test_vcl(b_native, tsteps, n, A, B);
+    test_eve(b_native, tsteps, n, A, B);
 }

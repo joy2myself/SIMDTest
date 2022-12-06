@@ -2,36 +2,90 @@
 #include <nanobench.h>
 using ElemType = float;
 
-const std::size_t ARRLENGTH = 256;
-const std::size_t LEN = 4;
-const std::size_t ITERATION = 500000;
+#include <cmath>
+#include <cstdio>
+#include <memory>
+#include <numeric>
+#include <random>
 
-template<typename Vec, typename Tp> struct AXPY_SIMD
+using ElemType = float;
+constexpr auto kNruns = 1;
+constexpr auto kN = 1024;
+
+constexpr float eps2 = 0.01f;
+constexpr float timeStep = 0.0001f;
+
+
+template<typename Vec, typename Tp> struct NBODY_SIMD
 {
-  void operator()(Tp a, Tp *x, Tp *y, Tp *res)
+  inline void pPInteractionSIMD(
+      Vec p1posx,
+      Vec p1posy,
+      Vec p1posz,
+      Vec &p1velx,
+      Vec &p1vely,
+      Vec &p1velz,
+      Vec p2posx,
+      Vec p2posy,
+      Vec p2posz,
+      Vec p2mass)
   {
-    auto len = details::Len<Vec, Tp>();
-    std::size_t vec_size = ARRLENGTH - ARRLENGTH % len;
-    Vec x_simd, y_simd, res_simd;
-    for (std::size_t i = 0; i < vec_size; i += len)
+    const Vec xdistance = p1posx - p2posx;
+    const Vec ydistance = p1posy - p2posy;
+    const Vec zdistance = p1posz - p2posz;
+    const Vec xdistanceSqr = xdistance * xdistance;
+    const Vec ydistanceSqr = ydistance * ydistance;
+    const Vec zdistanceSqr = zdistance * zdistance;
+    const Vec distSqr = details::BroadCast<Vec,Tp>(eps2) + xdistanceSqr + ydistanceSqr + zdistanceSqr;
+    const Vec distSixth = distSqr * distSqr * distSqr;
+    const Vec invDistCube = details::BroadCast<Vec,Tp>(1.0f) / details::Sqrt<Tp>(distSixth);
+    const Vec sts = p2mass * invDistCube * details::BroadCast<Vec,Tp>(timeStep);
+    p1velx += xdistanceSqr * sts;
+    p1vely += ydistanceSqr * sts;
+    p1velz += zdistanceSqr * sts;
+  }
+  void TestNBodySIMD(float *posx, float *posy, float *posz, float *velx, float *vely, float *velz, float *mass, size_t kN)
+  {
+    for (std::size_t i = 0; i < kN; i += details::Len<Vec, Tp>())
     {
-      details::Load_Aligned(x_simd, &x[i]);
-      details::Load_Aligned(y_simd, &y[i]);
-      res_simd = details::BroadCast<Vec, Tp>(a) * x_simd + y_simd;
-      details::Store_Aligned(res_simd, &res[i]);
+      const Vec piposx = (Vec &)(posx[i]);
+      const Vec piposy = (Vec &)(posy[i]);
+      const Vec piposz = (Vec &)(posz[i]);
+      Vec pivelx = (Vec &)(velx[i]);
+      Vec pively = (Vec &)(vely[i]);
+      Vec pivelz = (Vec &)(velz[i]);
+      for (std::size_t j = 0; j < kN; j++)
+      {
+        Vec pjposx = details::BroadCast<Vec,Tp>(posx[j]);
+        Vec pjposy = details::BroadCast<Vec,Tp>(posy[j]);
+        Vec pjposz = details::BroadCast<Vec,Tp>(posz[j]);
+        Vec pjmass = details::BroadCast<Vec,Tp>(mass[j]);
+        pPInteractionSIMD(
+            piposx, piposy, piposz, pivelx, pively, pivelz, pjposx, pjposy, pjposz, pjmass);
+      }
+      (Vec &)(velx[i]) = pivelx;
+      (Vec &)(vely[i]) = pively;
+      (Vec &)(velz[i]) = pivelz;
     }
-    for (std::size_t i = vec_size; i < ARRLENGTH; ++i)
+    for (std::size_t i = 0; i < kN; i += details::Len<Vec, Tp>())
     {
-      res[i] = a * x[i] + y[i];
+      (Vec &)(posx[i]) += (const Vec &)(velx[i]) * details::BroadCast<Vec,Tp>(timeStep);
+      (Vec &)(posy[i]) += (const Vec &)(vely[i]) * details::BroadCast<Vec,Tp>(timeStep);
+      (Vec &)(posz[i]) += (const Vec &)(velz[i]) * details::BroadCast<Vec,Tp>(timeStep);
     }
+  }
+  void operator()(float *posx, float *posy, float *posz, float *velx, float *vely, float *velz, float *mass, size_t kN)
+  {
+    TestNBodySIMD(posx, posy, posz, velx, vely, velz, mass, kN);
   }
 };
 
-void test_std_simd(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res)
+
+void test_std_simd(ankerl::nanobench::Bench &bench, ElemType *posx, ElemType *posy, ElemType *posz, ElemType *velx, ElemType *vely, ElemType *velz, ElemType *mass, size_t kN)
 {
-  AXPY_SIMD<std_simd_t_v_native<ElemType>, ElemType> func;
-  bench.minEpochIterations(ITERATION).run("std_simd", [&]() {
-    func(a, x, y, res);
+  NBODY_SIMD<std_simd_t_v_native<ElemType>, ElemType> func;
+  bench.minEpochIterations(100).run("std_simd", [&]() {
+    func(posx, posy, posz, velx, vely, velz, mass, kN);
     ankerl::nanobench::doNotOptimizeAway(func);
   });
 }

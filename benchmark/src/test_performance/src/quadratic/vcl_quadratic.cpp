@@ -1,37 +1,85 @@
 #include "../../../../include/core/vcl_core.h"
 #include <nanobench.h>
+#include <cmath>
+#include <limits>
+#include <random>
+
 using ElemType = float;
 
-const std::size_t ARRLENGTH = 256;
-const std::size_t LEN = 4;
-const std::size_t ITERATION = 500000;
+const size_t kN = (1024 * 1024);
+const std::size_t ITERATION = 100;
 
-template<typename Vec, typename Tp> struct AXPY_SIMD
+template<typename Vec, typename Mask, typename Tp> struct QUADRATIC_SIMD
 {
-  void operator()(Tp a, Tp *x, Tp *y, Tp *res)
+  void QuadSolveSIMD(Vec const &a, Vec const &b, Vec const &c, Vec &x1, Vec &x2, Vec &roots)
   {
-    auto len = details::Len<Vec, Tp>();
-    std::size_t vec_size = ARRLENGTH - ARRLENGTH % len;
-    Vec x_simd, y_simd, res_simd;
-    for (std::size_t i = 0; i < vec_size; i += len)
+    Vec a_inv = details::BroadCast<Vec, Tp>(Tp(1.0f)) / a;
+    Vec delta = b * b - details::BroadCast<Vec, Tp>(Tp(4.0f)) * a * c;
+    Vec sign;
+    sign = details::Select<Mask, Vec, Tp>(b >= details::BroadCast<Vec, Tp>(Tp(0.0f)), details::BroadCast<Vec, Tp>(Tp(1.0f)), sign);
+    sign = details::Select<Mask, Vec, Tp>(b < details::BroadCast<Vec, Tp>(Tp(0.0f)), details::BroadCast<Vec, Tp>(Tp(-1.0f)), sign);
+
+    auto mask0 = delta < details::BroadCast<Vec, Tp>(Tp(0.0f));
+    auto mask2 = delta >= details::BroadCast<Vec, Tp>(Tp(std::numeric_limits<Tp>::epsilon()));
+
+    Vec root1 = details::BroadCast<Vec, Tp>(Tp(-0.5f)) * b + sign * details::Sqrt<Tp>(delta);
+    Vec root2 = c / root1;
+    root1 = root1 * a_inv;
+
+    auto mask1 = details::Not<Tp>(details::Or<Tp>(mask2, mask0));
+
+    x1 = details::Select<Mask, Vec, Tp>(mask2, root1, x1);
+    x2 = details::Select<Mask, Vec, Tp>(mask2, root2, x2);
+    roots = details::Select<Mask, Vec, Tp>(mask2, details::BroadCast<Vec, Tp>(Tp(2)), x2);
+    roots = details::Select<Mask, Vec, Tp>(details::Not<Tp>(mask2), details::BroadCast<Vec, Tp>(Tp(0)), x2);
+    if (details::None<Tp>(mask1)) 
+      return;
+
+    root1 = details::BroadCast<Vec, Tp>(Tp(-0.5f)) * b * a_inv;
+
+    roots = details::Select<Mask, Vec, Tp>(mask1, details::BroadCast<Vec, Tp>(Tp(1)), roots);
+    x1 = details::Select<Mask, Vec, Tp>(mask1, root1, x1);
+    x2 = details::Select<Mask, Vec, Tp>(mask1, root1, x2);
+  }
+
+  void TestQuadSolve(const ElemType *a, const ElemType *b, const ElemType *c, ElemType *x1, ElemType *x2, ElemType *roots)
+  {
+    for (size_t i = 0; i < kN; i += details::Len<Vec, Tp>())
     {
-      details::Load_Aligned(x_simd, &x[i]);
-      details::Load_Aligned(y_simd, &y[i]);
-      res_simd = details::BroadCast<Vec, Tp>(a) * x_simd + y_simd;
-      details::Store_Aligned(res_simd, &res[i]);
+      
+      Vec a_v, b_v, c_v, x1_v, x2_v, roots_v;
+      details::Load_Aligned(a_v, &a[i]);
+      details::Load_Aligned(b_v, &b[i]);
+      details::Load_Aligned(c_v, &c[i]);
+      details::Load_Aligned(x1_v, &x1[i]);
+      details::Load_Aligned(x2_v, &x2[i]);
+      details::Load_Aligned(roots_v, &roots[i]);
+
+      QuadSolveSIMD(
+      a_v, 
+      b_v, 
+      c_v, 
+      x1_v, 
+      x2_v, 
+      roots_v
+      );
+
+      details::Store_Aligned(roots_v, &roots[i]);
     }
-    for (std::size_t i = vec_size; i < ARRLENGTH; ++i)
-    {
-      res[i] = a * x[i] + y[i];
-    }
+  }
+
+  void operator()(const ElemType *a, const ElemType *b, const ElemType *c, ElemType *x1, ElemType *x2, ElemType *roots)
+  {
+    TestQuadSolve(a, b, c, x1, x2, roots);
   }
 };
 
-void test_vcl(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res)
+
+void test_vcl(ankerl::nanobench::Bench &bench, const ElemType *a, const ElemType *b, const ElemType *c, ElemType *x1, ElemType *x2, ElemType *roots)
 {
-  AXPY_SIMD<vcl_t_v_native<ElemType>, ElemType> func;
+  QUADRATIC_SIMD<vcl_t_v_native<ElemType>, vcl_t_m_native<ElemType>, ElemType> func;
   bench.minEpochIterations(ITERATION).run("vcl", [&]() {
-    func(a, x, y, res);
+    func(a, b, c, x1, x2, roots);
     ankerl::nanobench::doNotOptimizeAway(func);
   });
 }
