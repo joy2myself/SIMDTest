@@ -2,123 +2,80 @@
 #include <vector>
 #include <numeric>
 
-using ElemType = float;
+using ElemType = int32_t;
 
-///////////////////////parameters initialization////////////////////////
+#define ARRLENGTH 32
+#define TSTEPS    16
 
-const std::size_t LEN = 4;
-const std::size_t ITERATION = 5;
+///////////////////////parameters initialization///////////////////////
 
-const unsigned int _width = 1024;
-const unsigned int _height = 768;
-const ElemType x_0 = -2;
-const ElemType x_1 = 1;
-const ElemType y_0 = -1;
-const ElemType y_1 = 1;
-const int _maxIters = 256;
+const int n = ARRLENGTH;
+const int tsteps = TSTEPS;
+const std::size_t ITERATION = 5000;
 
-std::vector<ElemType> _buf(_width *_height);
+ElemType A[ARRLENGTH][ARRLENGTH];
+ElemType B[ARRLENGTH][ARRLENGTH];
 
-struct MANDELBROT_SCALAR
+void Initial()
+{
+  int i, j;
+
+  for (i = 0; i < n; i++)
+    for (j = 0; j < n; j++)
+    {
+      A[i][j] = ((ElemType)i * (j + 2) + 2) / n;
+      B[i][j] = ((ElemType)i * (j + 3) + 3) / n;
+    }
+}
+
+
+struct JACOBI_2D_SCALAR
 {
 #ifdef OpenAutoOptimize
 #pragma GCC push_options
 #pragma GCC optimize("O2,tree-vectorize")
-  inline int mandel(ElemType c_re, ElemType c_im, int count)
+  void kernel_jacobi_2d(int tsteps, int n, ElemType A[ARRLENGTH][ARRLENGTH], ElemType B[ARRLENGTH][ARRLENGTH])
   {
-    ElemType z_re = c_re, z_im = c_im;
-    int i;
-    for (i = 0; i < count; ++i)
+    int t, i, j;
+    for (t = 0; t < tsteps; t++)
     {
-      if (z_re * z_re + z_im * z_im > 4.f)
-      {
-        break;
-      }
-
-      ElemType new_re = z_re * z_re - z_im * z_im;
-      ElemType new_im = 2.f * z_re * z_im;
-      z_re = c_re + new_re;
-      z_im = c_im + new_im;
+      for (i = 1; i < n - 1; i++)
+        for (j = 1; j < n - 1; j++)
+          B[i][j] = static_cast<ElemType>(0.2) * (A[i][j] + A[i][j - 1] + A[i][1 + j] + A[1 + i][j] + A[i - 1][j]);
+      for (i = 1; i < n - 1; i++)
+        for (j = 1; j < n - 1; j++)
+          A[i][j] = static_cast<ElemType>(0.2) * (B[i][j] + B[i][j - 1] + B[i][1 + j] + B[1 + i][j] + B[i - 1][j]);
     }
-
-    return i;
   }
-
-  void
-  mandelbrot(ElemType x0, ElemType y0, ElemType x1, ElemType y1, int width, int height, int maxIterations, ElemType output[])
+  void operator()(int tsteps, int n, ElemType A[ARRLENGTH][ARRLENGTH], ElemType B[ARRLENGTH][ARRLENGTH])
   {
-    ElemType dx = (x1 - x0) / width;
-    ElemType dy = (y1 - y0) / height;
-
-    for (int j = 0; j < height; j++)
-    {
-      for (int i = 0; i < width; ++i)
-      {
-        ElemType x = x0 + i * dx;
-        ElemType y = y0 + j * dy;
-
-        int index = (j * width + i);
-        output[index] = mandel(x, y, maxIterations);
-      }
-    }
+    kernel_jacobi_2d(tsteps, n, A, B);
   }
 #pragma GCC pop_options
 #else
-  inline int mandel(ElemType c_re, ElemType c_im, int count)
+  void kernel_jacobi_2d(int tsteps, int n, ElemType A[ARRLENGTH][ARRLENGTH], ElemType B[ARRLENGTH][ARRLENGTH])
   {
-    ElemType z_re = c_re, z_im = c_im;
-    int i;
-    for (i = 0; i < count; ++i)
+    int t, i, j;
+    for (t = 0; t < tsteps; t++)
     {
-      if (z_re * z_re + z_im * z_im > 4.f)
-      {
-        break;
-      }
-
-      ElemType new_re = z_re * z_re - z_im * z_im;
-      ElemType new_im = 2.f * z_re * z_im;
-      z_re = c_re + new_re;
-      z_im = c_im + new_im;
+      for (i = 1; i < n - 1; i++)
+        for (j = 1; j < n - 1; j++)
+          B[i][j] = static_cast<ElemType>(0.2) * (A[i][j] + A[i][j - 1] + A[i][1 + j] + A[1 + i][j] + A[i - 1][j]);
+      for (i = 1; i < n - 1; i++)
+        for (j = 1; j < n - 1; j++)
+          A[i][j] = static_cast<ElemType>(0.2) * (B[i][j] + B[i][j - 1] + B[i][1 + j] + B[1 + i][j] + B[i - 1][j]);
     }
-
-    return i;
   }
-
-  void
-  mandelbrot(ElemType x0, ElemType y0, ElemType x1, ElemType y1, int width, int height, int maxIterations, ElemType output[])
+  void operator()(int tsteps, int n, ElemType A[ARRLENGTH][ARRLENGTH], ElemType B[ARRLENGTH][ARRLENGTH])
   {
-    ElemType dx = (x1 - x0) / width;
-    ElemType dy = (y1 - y0) / height;
-
-    for (int j = 0; j < height; j++)
-    {
-      for (int i = 0; i < width; ++i)
-      {
-        ElemType x = x0 + i * dx;
-        ElemType y = y0 + j * dy;
-
-        int index = (j * width + i);
-        output[index] = mandel(x, y, maxIterations);
-      }
-    }
+    kernel_jacobi_2d(tsteps, n, A, B);
   }
 #endif
-  void operator()(
-      ElemType x0,
-      ElemType y0,
-      ElemType x1,
-      ElemType y1,
-      int width,
-      int height,
-      int maxIters,
-      std::vector<ElemType> _buf)
-  {
-    mandelbrot(x0, y0, x1, y1, width, height, maxIters, _buf.data());
-  }
 };
+
 
 int main()
 {
-  MANDELBROT_SCALAR{}(x_0, y_0, x_1, y_1, _width, _height, _maxIters, _buf);
+  JACOBI_2D_SCALAR{}(tsteps, n, A, B);
   return 0;
 }

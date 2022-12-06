@@ -1,124 +1,112 @@
 #include <cstdlib>
-#include <vector>
-#include <numeric>
-
+#include <nanobench.h>
 using ElemType = float;
 
-///////////////////////parameters initialization////////////////////////
+ElemType xmin = -1.6, xmax = 1.6;
+ElemType ymin = -1.6, ymax = 1.6;
 
-const std::size_t LEN = 4;
-const std::size_t ITERATION = 5;
+size_t nx = 1024, ny = 1024, max_iter = 500;
+ElemType cr = -0.123, ci = 0.754;
 
-const unsigned int _width = 1024;
-const unsigned int _height = 768;
-const ElemType x_0 = -2;
-const ElemType x_1 = 1;
-const ElemType y_0 = -1;
-const ElemType y_1 = 1;
-const int _maxIters = 256;
+unsigned char *image = new unsigned char[nx * ny];
 
-std::vector<ElemType> _buf(_width *_height);
-
-struct MANDELBROT_SCALAR
+struct JULIA_SCALAR
 {
 #ifdef OpenAutoOptimize
 #pragma GCC push_options
 #pragma GCC optimize("O2,tree-vectorize")
-  inline int mandel(ElemType c_re, ElemType c_im, int count)
+  void julia(
+      ElemType xmin,
+      ElemType xmax,
+      size_t nx,
+      ElemType ymin,
+      ElemType ymax,
+      size_t ny,
+      size_t max_iter,
+      unsigned char *image,
+      ElemType real,
+      ElemType im)
   {
-    ElemType z_re = c_re, z_im = c_im;
-    int i;
-    for (i = 0; i < count; ++i)
+    ElemType dx = (xmax - xmin) / ElemType(nx);
+    ElemType dy = (ymax - ymin) / ElemType(ny);
+
+    for (size_t i = 0; i < nx; ++i)
     {
-      if (z_re * z_re + z_im * z_im > 4.f)
+      for (size_t j = 0; j < ny; ++j)
       {
-        break;
-      }
+        size_t k = 0;
+        ElemType x = xmin + ElemType(i) * dx, cr = real, zr = x;
+        ElemType y = ymin + ElemType(j) * dy, ci = im, zi = y;
 
-      ElemType new_re = z_re * z_re - z_im * z_im;
-      ElemType new_im = 2.f * z_re * z_im;
-      z_re = c_re + new_re;
-      z_im = c_im + new_im;
-    }
+        do
+        {
+          x = zr * zr - zi * zi + cr;
+          y = ElemType(2.0) * zr * zi + ci;
+          zr = x;
+          zi = y;
+        } while (++k < max_iter && (zr * zr + zi * zi < ElemType(4.0)));
 
-    return i;
-  }
-
-  void
-  mandelbrot(ElemType x0, ElemType y0, ElemType x1, ElemType y1, int width, int height, int maxIterations, ElemType output[])
-  {
-    ElemType dx = (x1 - x0) / width;
-    ElemType dy = (y1 - y0) / height;
-
-    for (int j = 0; j < height; j++)
-    {
-      for (int i = 0; i < width; ++i)
-      {
-        ElemType x = x0 + i * dx;
-        ElemType y = y0 + j * dy;
-
-        int index = (j * width + i);
-        output[index] = mandel(x, y, maxIterations);
+        image[ny * i + j] = k;
       }
     }
   }
 #pragma GCC pop_options
 #else
-  inline int mandel(ElemType c_re, ElemType c_im, int count)
+  void julia(
+      ElemType xmin,
+      ElemType xmax,
+      size_t nx,
+      ElemType ymin,
+      ElemType ymax,
+      size_t ny,
+      size_t max_iter,
+      unsigned char *image,
+      ElemType real,
+      ElemType im)
   {
-    ElemType z_re = c_re, z_im = c_im;
-    int i;
-    for (i = 0; i < count; ++i)
+    ElemType dx = (xmax - xmin) / ElemType(nx);
+    ElemType dy = (ymax - ymin) / ElemType(ny);
+
+    for (size_t i = 0; i < nx; ++i)
     {
-      if (z_re * z_re + z_im * z_im > 4.f)
+      for (size_t j = 0; j < ny; ++j)
       {
-        break;
-      }
+        size_t k = 0;
+        ElemType x = xmin + ElemType(i) * dx, cr = real, zr = x;
+        ElemType y = ymin + ElemType(j) * dy, ci = im, zi = y;
 
-      ElemType new_re = z_re * z_re - z_im * z_im;
-      ElemType new_im = 2.f * z_re * z_im;
-      z_re = c_re + new_re;
-      z_im = c_im + new_im;
-    }
+        do
+        {
+          x = zr * zr - zi * zi + cr;
+          y = ElemType(2.0) * zr * zi + ci;
+          zr = x;
+          zi = y;
+        } while (++k < max_iter && (zr * zr + zi * zi < ElemType(4.0)));
 
-    return i;
-  }
-
-  void
-  mandelbrot(ElemType x0, ElemType y0, ElemType x1, ElemType y1, int width, int height, int maxIterations, ElemType output[])
-  {
-    ElemType dx = (x1 - x0) / width;
-    ElemType dy = (y1 - y0) / height;
-
-    for (int j = 0; j < height; j++)
-    {
-      for (int i = 0; i < width; ++i)
-      {
-        ElemType x = x0 + i * dx;
-        ElemType y = y0 + j * dy;
-
-        int index = (j * width + i);
-        output[index] = mandel(x, y, maxIterations);
+        image[ny * i + j] = k;
       }
     }
   }
 #endif
   void operator()(
-      ElemType x0,
-      ElemType y0,
-      ElemType x1,
-      ElemType y1,
-      int width,
-      int height,
-      int maxIters,
-      std::vector<ElemType> _buf)
+      ElemType xmin,
+      ElemType xmax,
+      size_t nx,
+      ElemType ymin,
+      ElemType ymax,
+      size_t ny,
+      size_t max_iter,
+      unsigned char *image,
+      ElemType real,
+      ElemType im)
   {
-    mandelbrot(x0, y0, x1, y1, width, height, maxIters, _buf.data());
+    julia(xmin, xmax, nx, ymin, ymax, ny, max_iter, image, real, im);
   }
 };
 
+
 int main()
 {
-  MANDELBROT_SCALAR{}(x_0, y_0, x_1, y_1, _width, _height, _maxIters, _buf);
+  JULIA_SCALAR{}(xmin, xmax, nx, ymin, ymax, ny, max_iter, image, cr, ci);
   return 0;
 }
