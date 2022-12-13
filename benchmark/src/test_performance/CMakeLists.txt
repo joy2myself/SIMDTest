@@ -1,8 +1,3 @@
-cmake_minimum_required(VERSION 3.25)
-project(Bench)
-add_compile_options(-O2 -std=c++2a)
-
-
 add_subdirectory(./src/AXPY)
 add_subdirectory(./src/black_scholes)
 # add_subdirectory(./src/conv_maxpooling)
