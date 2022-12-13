@@ -1,42 +1,27 @@
-[submodule "simd_libraries/nsimd"]
-	path = simd_libraries/nsimd
-	url = https://github.com/agenium-scale/nsimd.git
-[submodule "simd_libraries/libsimdpp"]
-	path = simd_libraries/libsimdpp
-	url = https://github.com/p12tic/libsimdpp.git
-[submodule "simd_libraries/highway"]
-	path = simd_libraries/highway
-	url = https://github.com/google/highway.git
-[submodule "simd_libraries/umesimd"]
-	path = simd_libraries/umesimd
-	url = https://github.com/edanor/umesimd.git
-[submodule "simd_libraries/MIPP"]
-	path = simd_libraries/MIPP
-	url = https://github.com/aff3ct/MIPP.git
-[submodule "simd_libraries/generic_simd"]
-	path = simd_libraries/generic_simd
-	url = https://github.com/genericsimd/generic_simd.git
-[submodule "simd_libraries/Vc"]
-	path = simd_libraries/Vc
-	url = https://github.com/VcDevel/Vc.git
-[submodule "simd_libraries/boost-simd-clone"]
-	path = simd_libraries/boost-simd-clone
-	url = https://github.com/nickporubsky/boost-simd-clone.git
-[submodule "simd_libraries/xsimd"]
-	path = simd_libraries/xsimd
-	url = https://github.com/xtensor-stack/xsimd.git
-[submodule "simd_libraries/version2"]
-	path = simd_libraries/version2
-	url = https://github.com/vectorclass/version2.git
-[submodule "simd_libraries/google_benchmark"]
-	path = simd_libraries/google_benchmark
-	url = https://github.com/google/benchmark.git
-[submodule "simd_libraries/nanobench"]
-	path = simd_libraries/nanobench
-	url = https://github.com/martinus/nanobench.git
-[submodule "simd_libraries/tsimd"]
-	path = simd_libraries/tsimd
-	url = https://github.com/jeffamstutz/tsimd.git
 [submodule "simd_libraries/eve"]
 	path = simd_libraries/eve
-	url = https://github.com/jfalcou/eve.git
+	url = git@github.com:jfalcou/eve.git
+[submodule "simd_libraries/highway"]
+	path = simd_libraries/highway
+	url = git@github.com:google/highway.git
+[submodule "simd_libraries/xsimd"]
+	path = simd_libraries/xsimd
+	url = git@github.com:xtensor-stack/xsimd.git
+[submodule "simd_libraries/nsimd"]
+	path = simd_libraries/nsimd
+	url = git@github.com:agenium-scale/nsimd.git
+[submodule "simd_libraries/version2"]
+	path = simd_libraries/version2
+	url = git@github.com:vectorclass/version2.git
+[submodule "simd_libraries/MIPP"]
+	path = simd_libraries/MIPP
+	url = git@github.com:aff3ct/MIPP.git
+[submodule "simd_libraries/tsimd"]
+	path = simd_libraries/tsimd
+	url = git@github.com:jeffamstutz/tsimd.git
+[submodule "simd_libraries/Vc"]
+	path = simd_libraries/Vc
+	url = git@github.com:VcDevel/Vc.git
+[submodule "simd_libraries/nanobench"]
+	path = simd_libraries/nanobench
+	url = git@github.com:martinus/nanobench.git
