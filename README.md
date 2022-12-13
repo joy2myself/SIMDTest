@@ -1,7 +1,7 @@
 
 # 数据并行编程库通用测试框架
 
- 本通用测试框架是其他VecCore 是其他矢量化库之上的一个简单抽象层。它提供了一个独立于体系结构的 API，用于表达对数据的向量操作。然后可以将使用此 API 编写的代码分派到使用 Vc、std::simd 、highway等库实现的多个后端之一。这允许人们在 Vc 和 std::simd 等支持的平台上获得最佳性能，而不会失去对不受支持的体系结构（例如 PowerPC）的可移植性。可以切换不同后端而不需要更改用户代码。另一个优点是，与编译器intrinsics函数不同，可以为 SSE、AVX2、AVX512 等编译相同的代码，而无需修改。<br>
+ 本通用测试框架是其他矢量化库之上的一个简单抽象层。它提供了一个独立于体系结构的 API，用于表达对数据的向量操作。然后可以将使用此 API 编写的代码分派到使用 Vc、std::simd 、highway等库实现的多个后端之一。这允许人们在 Vc 和 std::simd 等支持的平台上获得最佳性能，而不会失去对不受支持的体系结构（例如 PowerPC）的可移植性。可以切换不同后端而不需要更改用户代码。另一个优点是，与编译器intrinsics函数不同，可以为 SSE、AVX2、AVX512 等编译相同的代码，而无需修改。<br>
 目前所支持的benchmark有AXPY、blcakscholes、conv、maxpooling、De-quantization、jacobi2d、julia、mandelbrot、nbody、newton_fractal、quadratic和RGV2YUV 12个benchmark。
  
 
@@ -55,6 +55,7 @@ git checkout v-1.0
 git submodule update --init --recursive
 cd benchmark/src/test_performance
 mkdir build
+cd build
 cmake ..
 ```
 构建成功后，可执行文件在
