@@ -1,0 +1,12 @@
+
+add_subdirectory(./AXPY)
+add_subdirectory(./black_scholes)
+# add_subdirectory(./conv_maxpooling)
+add_subdirectory(./De-quantization)
+add_subdirectory(./jacobi-2d)
+add_subdirectory(./julia)
+add_subdirectory(./mandelbrot)
+add_subdirectory(./nbody)
+add_subdirectory(./newton_fractal)
+add_subdirectory(./quadratic)
+add_subdirectory(./RGB2YUV)
