@@ -1,0 +1,14 @@
+#include <benchmark/benchmark.h>
+#include "../../../include/core/std_simd_core.h"
+using ElemType = float;
+const size_t Len = 256;
+
+static void BM_std_simdStoreU(benchmark::State& state) {
+  ElemType Arr[Len]{0};
+  ElemType Arr1[Len]{0};
+  std_simd_t_v_native<ElemType> v;
+  details::Load_Unaligned<std_simd_t_v_native<ElemType>, ElemType>(v, Arr);
+  for (auto _ : state)
+    details::Store_Unaligned<std_simd_t_v_native<ElemType>, ElemType>(v, Arr1);
+}
+BENCHMARK(BM_std_simdStoreU)->Arg(1);
