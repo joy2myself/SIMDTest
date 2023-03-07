@@ -51,12 +51,15 @@ c++20新特性，所以需要使用GCC版本在11.2.0之上：
 ```
 git clone git@yt.droid.ac.cn:panhaolin/simd-libraries-benchmark.git
 cd simd-libraries-benchmark
-git checkout v-1.0
 git submodule update --init --recursive
-cd benchmark/src/test_performance
+// build nsimd, 具体请参阅nsimd仓库
+cd simd_libraries/nsimd/
+bash scripts/build.sh for avx2/avx/sse42/sse2 with gcc
+cd ../../benchmark/src/test_performance
 mkdir build
 cd build
 cmake ..
+make
 ```
 构建成功后，可执行文件在
 _./benchmark/src/test_performance/build/XXX/bin/_
@@ -105,6 +108,3 @@ template<typename Vec, typename Tp> struct AXPY_SIMD
   }
 };
 ```
-
-## 相关工作
-与本项目工作相似的有Amadio所著的VecCore库，他的工作同样是考虑到有些SIMD库可能只对特定平台上有效，并不能跨平台地使用。所以通过把各个SIMD库作为不同的实现后端，根据需要来选择最合适的后端来实现程序的向量化。
