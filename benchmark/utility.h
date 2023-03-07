@@ -1,5 +1,5 @@
-/*   The functions of this file is to obtain the value of simd type length in compile-time, 
-  such as being used by computing non-type template parameters.  
+/*   The functions of this file is to obtain the value of simd type length in compile-time,
+  such as being used by computing non-type template parameters.
 */
 
 #pragma once
@@ -8,10 +8,10 @@
 #include <experimental/simd>
 #include <type_traits>
 
-#include "../simd_libraries/MIPP/src/mipp.h"
-#include "../simd_libraries/tsimd/tsimd/tsimd.h"
-#include "../simd_libraries/version2/vectorclass.h"
-#include "../simd_libraries/xsimd/include/xsimd/xsimd.hpp"
+#include "MIPP/src/mipp.h"
+#include "tsimd/tsimd/tsimd.h"
+#include "version2/vectorclass.h"
+#include "xsimd/include/xsimd/xsimd.hpp"
 #include "eve/algo.hpp"
 #include "eve/logical.hpp"
 #include "eve/module/core.hpp"
@@ -29,7 +29,7 @@ namespace utility
 {
   /////////////////////////STATIC SIZE/////////////////////////////
 
-  template<typename Tp, auto N> 
+  template <typename Tp, auto N>
   constexpr auto arraySize(const std::array<Tp, N> &) noexcept
   {
     return N;
@@ -37,10 +37,10 @@ namespace utility
 
   //////////////////////////////VCL////////////////////////////////
 
-  template<typename Tp>
+  template <typename Tp>
   constexpr auto GetVecType()
   {
-  #if INSTRSET >= 2 && INSTRSET <= 6
+#if INSTRSET >= 2 && INSTRSET <= 6
 
     if constexpr (std::same_as<Tp, float>)
     {
@@ -92,7 +92,7 @@ namespace utility
       return Vec2uq{};
     }
 
-  #elif INSTRSET >= 7 && INSTRSET <= 8
+#elif INSTRSET >= 7 && INSTRSET <= 8
 
     if constexpr (std::same_as<Tp, float>)
     {
@@ -144,7 +144,7 @@ namespace utility
       return Vec4uq{};
     }
 
-  #elif INSTRSET >= 9
+#elif INSTRSET >= 9
 
     if constexpr (std::same_as<Tp, float>)
     {
@@ -196,13 +196,13 @@ namespace utility
       return Vec8uq{};
     }
 
-  #endif
+#endif
   }
 
-  template<typename Tp>
+  template <typename Tp>
   constexpr auto GetMaskType()
   {
-  #if INSTRSET >= 2 && INSTRSET <= 6
+#if INSTRSET >= 2 && INSTRSET <= 6
 
     if constexpr (std::same_as<Tp, float>)
     {
@@ -254,9 +254,7 @@ namespace utility
       return Vec2qb{};
     }
 
-
-
-  #elif INSTRSET >= 7 && INSTRSET <= 8
+#elif INSTRSET >= 7 && INSTRSET <= 8
 
     if constexpr (std::same_as<Tp, float>)
     {
@@ -308,7 +306,7 @@ namespace utility
       return Vec4qb{};
     }
 
-  #elif INSTRSET >= 9
+#elif INSTRSET >= 9
 
     if constexpr (std::same_as<Tp, float>)
     {
@@ -360,7 +358,7 @@ namespace utility
       return Vec8qb{};
     }
 
-  #endif
+#endif
   }
 
 } // namespace utilty
