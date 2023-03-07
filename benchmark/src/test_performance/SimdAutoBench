@@ -1,0 +1,353 @@
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+use Config; 
+use Getopt::Long;
+
+
+#-------------------------------------------------------------------------------
+# Function Definition
+#-------------------------------------------------------------------------------
+
+sub parse_command_line_options {
+
+  my $cpp_file;
+  my $function_name;
+  my $function_args;
+  my $elemtype;
+  my $compiler;
+  my $compile_args;
+  my $target;
+  my $help;
+  GetOptions("cpp_file=s" => \$cpp_file,
+             "function_name=s" => \$function_name,
+             "function_args=s" => \$function_args,
+             "elemtype=s" => \$elemtype,
+             "compiler=s" => \$compiler,
+             "compile_args=s" => \$compile_args,
+             "target=s" => \$target,
+             "help" => \$help);
+
+  return ($cpp_file, $function_name, $function_args, $elemtype, $compiler, $compile_args, $target, $help);
+}
+
+sub display_usage_message {
+  print "Usage: SimdAutoBench [OPTIONS]\n";
+  print "\n";
+  print "Options:\n";
+  print "  --help                Display this help message\n";
+  print "  --cpp_file=FILE       C++ file name(Please add the file path)\n";
+  print "  --function_name=NAME  Function name\n";
+  print "  --function_args=ARGS  Function arguments (optional if the args of function is null)\n";
+  print "  --elemtype=TYPE       Element type\n";
+  print "  --compiler=PATH       Path to compiler(if pass the compiler without path, it will select the default one)\n";
+  print "  --compile_args=ARGS   Compiler arguments (optional)\n";
+  print "  --target=codesize/performance   The requirement of users\n";
+  exit;
+}
+
+sub check_required_options {
+  my ($cpp_file, $function_name, $elemtype, $compiler, $target) = @_;
+
+  my @missing_options;
+  push @missing_options, "--cpp_file" if !$cpp_file;
+  push @missing_options, "--function_name" if !$function_name;
+  push @missing_options, "--elemtype" if !$elemtype;
+  push @missing_options, "--compiler" if !$compiler;
+  push @missing_options, "--target" if !$target;
+
+  if (@missing_options) {
+    print "Error: Missing required command line options: @missing_options\n";
+    exit 1;
+  }
+  if ($function_name eq "main") {
+    print "Error: Function name cannot be 'main'\n";
+    exit 1;
+  }
+}
+
+sub set_default_function_args {
+  my ($function_args) = @_;
+
+  if (!$function_args) {
+    $function_args = "";
+  }
+  return $function_args;
+}
+
+sub set_default_compile_args {
+  my ($compile_args) = @_;
+
+  if (!$compile_args) {
+    $compile_args = "";
+  }
+  return $compile_args;
+}
+
+sub change_file_extension {
+  my ($cpp_file) = @_;
+
+  my $cpp_file_modified = $cpp_file;
+  $cpp_file_modified =~ s/\.cpp$/_modified.cpp/;
+  system("cp $cpp_file $cpp_file_modified");
+  return $cpp_file_modified;
+}
+
+sub open_cpp_files {
+  my ($cpp_file, $cpp_file_modified) = @_;
+
+  open(my $fh_in, "<", $cpp_file) or die "Error: Could not open $cpp_file for reading\n";
+  open(my $fh_out, ">", "$cpp_file_modified") or die "Error: Could not open $cpp_file_modified for writing\n";
+
+  while (my $line = <$fh_in>) {
+    if ($line =~ /^int\s+main\s*\(/) {
+      while ($line = <$fh_in>) {
+        last if ($line =~ /^}/);
+      }
+    } else {
+      print $fh_out $line;
+    }
+  }
+  return ($fh_in, $fh_out);
+}
+
+sub add_benchmark_functions {
+  my ($fh_out, $function_name, $function_args, $elemtype, $target) = @_;
+  my @vector_types;
+
+  if ($Config{archname} =~ /x86/) 
+  {   
+      push @vector_types, "xsimd_t_v_native";
+      push @vector_types, "std_simd_t_v_native";
+      push @vector_types, "eve_t_v_native";
+      push @vector_types, "mipp_t_v_native";
+      push @vector_types, "vcl_t_v_native";
+      push @vector_types, "vc_t_v_native";
+      push @vector_types, "highway_t_v_native";
+      push @vector_types, "tsimd_t_v_native";
+      push @vector_types, "scalar_t_v";
+  }
+  if ($Config{archname} =~ /riscv/) 
+  { 
+      push @vector_types, "scalar_t_v";
+      push @vector_types, "highway_t_v_native";
+  }
+  if ($Config{archname} =~ /arm/) 
+  {   
+      push @vector_types, "xsimd_t_v_native";
+      push @vector_types, "std_simd_t_v_native";
+      push @vector_types, "eve_t_v_native";
+      push @vector_types, "mipp_t_v_native";
+      push @vector_types, "scalar_t_v";
+      push @vector_types, "highway_t_v_native";
+  }
+  if ($Config{archname} =~ /powerpc/) 
+  { 
+      push @vector_types, "scalar_t_v";
+      push @vector_types, "eve_t_v_native";
+  }
+
+  if($target eq "performance"){
+    print $fh_out "#include <benchmark/benchmark.h>\n";
+    print $fh_out "\n";
+    print $fh_out "template <typename Vec, typename Tp>\n";
+    print $fh_out "static void BM_$function_name(benchmark::State& state) {\n";
+    print $fh_out "  for (auto _ : state)\n";
+    print $fh_out "    $function_name<Vec, Tp>($function_args);\n";
+    print $fh_out "}\n";
+    print $fh_out "\n";
+  
+    foreach my $vector_type (@vector_types) {
+      print $fh_out "BENCHMARK_TEMPLATE(BM_$function_name, $vector_type<$elemtype>, $elemtype);\n";
+    }
+    print $fh_out "\n";
+    print $fh_out "BENCHMARK_MAIN();\n";
+
+    return $fh_out;
+  }
+}
+
+sub close_cpp_files {
+  my ($fh_in, $fh_out) = @_;
+
+  close($fh_in);
+  close($fh_out);
+}
+
+sub modify_cpp_file {
+  my ($cpp_file, $function_name, $function_args, $elemtype, $target) = @_;
+  my $cpp_file_modified;
+  my ($fh_in, $fh_out);
+
+  $cpp_file_modified = change_file_extension($cpp_file);
+  ($fh_in, $fh_out) = open_cpp_files($cpp_file, $cpp_file_modified);
+  $fh_out = add_benchmark_functions($fh_out, $function_name, $function_args, $elemtype, $target);
+  close_cpp_files($fh_in, $fh_out);
+
+  return $cpp_file_modified;
+}
+
+sub compile_cpp_file {
+  my ($cpp_file_modified, $compiler, $compile_args, $target) = @_;
+
+  if($target eq "performance"){
+    system("$compiler $cpp_file_modified $compile_args -o benchmark_executable -lbenchmark -lpthread > error.txt 2>&1");
+
+    if($?)
+    {
+      print("--------------------------------\n");
+      print("The error is : \n");
+      print("--------------------------------\n");
+      print("\n");
+      system("cat error.txt");
+    }else{
+      system("$compiler $cpp_file_modified $compile_args -o benchmark_executable -lbenchmark -lpthread");
+    }
+    system("rm error.txt $cpp_file_modified");
+  }
+  
+}
+
+sub codesizerun{
+  my ($cpp_file, $function_name, $function_args, $elemtype, $compiler, $compile_args) = @_;
+  my @vector_types;
+  my @cpp_files_modified;
+  my @object_files;
+  my ($fh_in, @fh_outs);
+
+  if ($Config{archname} =~ /x86/) 
+  {   
+      push @vector_types, "std_simd_t_v_native";
+      push @vector_types, "xsimd_t_v_native";
+      push @vector_types, "eve_t_v_native";
+      push @vector_types, "mipp_t_v_native";
+      push @vector_types, "vcl_t_v_native";
+      push @vector_types, "vc_t_v_native";
+      push @vector_types, "highway_t_v_native";
+      push @vector_types, "tsimd_t_v_native";
+      push @vector_types, "scalar_t_v";
+  }
+  if ($Config{archname} =~ /riscv/) 
+  { 
+      push @vector_types, "scalar_t_v";
+      push @vector_types, "highway_t_v_native";
+  }
+  if ($Config{archname} =~ /arm/) 
+  {   
+      push @vector_types, "xsimd_t_v_native";
+      push @vector_types, "std_simd_t_v_native";
+      push @vector_types, "eve_t_v_native";
+      push @vector_types, "mipp_t_v_native";
+      push @vector_types, "scalar_t_v";
+      push @vector_types, "highway_t_v_native";
+  }
+  if ($Config{archname} =~ /powerpc/) 
+  { 
+      push @vector_types, "scalar_t_v";
+      push @vector_types, "eve_t_v_native";
+  }
+
+  system("mkdir objects");
+  for (my $i = 0; $i < scalar(@vector_types); $i++) {
+    my $cpp_file_modified = $cpp_file;
+    $cpp_file_modified =~ s/\.cpp$/_modified$i.cpp/;
+    system("cp $cpp_file modified_fies/$cpp_file_modified");
+    push @cpp_files_modified, $cpp_file_modified;
+
+    my $vector_type = $vector_types[$i];
+    my $fh_out = $fh_outs[$i];
+
+    open(my $fh_in, "<", $cpp_file) or die "Error: Could not open $cpp_file for reading\n";
+    open($fh_out, ">", "$cpp_file_modified") or die "Error: Could not open $cpp_file_modified for writing\n";
+
+    while (my $line = <$fh_in>) {
+        if ($line =~ /^int\s+main\s*\(/) {
+            while ($line = <$fh_in>) {
+                last if ($line =~ /^}/);
+            }
+        } else {
+            print $fh_out $line;
+        }
+    }
+    print $fh_out "int main(){\n";
+    print $fh_out "   $function_name<$vector_type<$elemtype>, $elemtype>($function_args);\n";
+    print $fh_out "   return 0;\n";
+    print $fh_out "}";
+
+    system("$compiler -C $cpp_file_modified $compile_args -o objects/benchmark_executable_$vector_type.o > error.txt 2>&1");
+    if($?)
+    {
+      print("--------------------------------\n");
+      print("The error is : \n");
+      print("--------------------------------\n");
+      print("\n");
+      system("cat error.txt");
+      exit;
+    }
+    push @object_files, "benchmark_executable_$vector_type.o"; # FIX ME
+  }
+  return @object_files;
+}
+
+sub run_benchmark_executable{
+  my ($target) = @_;
+
+  if($target eq "performance"){
+    system("./benchmark_executable --benchmark_report_aggregates_only=true --benchmark_repetitions=5 --benchmark_format=json > benchmark_executable.json");
+    print("--------------------------------\n");
+    print("The results are : \n");
+    print("--------------------------------\n");
+    print("\n");
+    system("./GetMin.py");
+    system("rm benchmark_executable benchmark_executable.json");
+  }
+}
+
+sub main{
+  my ($cpp_file, $function_name, $function_args, $elemtype, $compiler, $compile_args, $target, $help) = parse_command_line_options();
+
+  if ($help) {
+    display_usage_message();
+    exit;
+  }
+  check_required_options($cpp_file, $function_name, $elemtype, $compiler, $target);
+
+  set_default_function_args($function_args);
+
+  set_default_compile_args($compile_args);
+  if($target eq "codesize"){
+    my @object_files = codesizerun($cpp_file, $function_name, $function_args, $elemtype, $compiler, $compile_args);
+    my $min_size = -1;
+    my $min_file = "";
+    foreach my $object_file (@object_files) {
+      my $code_size_str = `objdump -h "objects/$object_file" | grep .text | awk '{print "0x"\$3}'`;
+      chomp($code_size_str);
+      my $code_size = int($code_size_str);
+      if ($min_size == -1 || $code_size < $min_size) {
+        $min_size = $code_size;
+        $min_file = $object_file;
+      }
+    }
+    print "Minimum code size: $min_size\n";
+    print "File with minimum code size: $min_file\n";
+    exit;
+  }
+  my $cpp_file_modified;
+  
+  $cpp_file_modified = modify_cpp_file($cpp_file, $function_name, $function_args, $elemtype, $target);
+
+  compile_cpp_file($cpp_file_modified, $compiler, $compile_args, $target);
+
+  run_benchmark_executable($target);
+  
+}
+
+#-------------------------------------------------------------------------------
+# Execute Perl Program
+#-------------------------------------------------------------------------------
+
+print("\n");
+print("Please Wait...\n");
+print("\n");
+main();
