@@ -49,8 +49,8 @@ c++20新特性，所以需要使用GCC版本在11.2.0之上：
 ## 怎么构建？
 
 ```
-git clone git@yt.droid.ac.cn:panhaolin/simd-libraries-benchmark.git
-cd simd-libraries-benchmark
+git clone git@github.com:Panhaolin2001/SIMDTest.git
+cd SIMDTest
 git submodule update --init --recursive
 // build nsimd, 具体请参阅nsimd仓库
 cd simd_libraries/nsimd/
@@ -58,8 +58,8 @@ bash scripts/build.sh for avx2/avx/sse42/sse2 with gcc
 cd ../../benchmark/src/test_performance
 mkdir build
 cd build
-cmake ..
-make
+cmake .. -G Ninja
+ninja
 ```
 构建成功后，可执行文件在
 _./benchmark/src/test_performance/build/XXX/bin/_
