@@ -193,7 +193,7 @@ int main()
   bench<JULIA_SIMD<std_simd_t_v_native<ElemType>, std_simd_t_m_native<ElemType>, ElemType>>(b_native, "std_simd");
   bench<JULIA_SIMD<vcl_t_v_native<ElemType>, vcl_t_m_native<ElemType>, ElemType>>(b_native, "vcl");
   bench<JULIA_SIMD<highway_t_v_native<ElemType>, highway_t_m_native<ElemType>, ElemType>>(b_native, "highway");
-  bench<JULIA_SIMD<nsimd_t_v_native<ElemType>, nsimd_t_m_native<ElemType>, ElemType>>(b_native, "nsimd");
+  // bench<JULIA_SIMD<nsimd_t_v_native<ElemType>, nsimd_t_m_native<ElemType>, ElemType>>(b_native, "nsimd");
   bench<JULIA_SIMD<tsimd_t_v_native<ElemType>, tsimd_t_m_native<ElemType>, ElemType>>(b_native, "tsimd");
   bench<JULIA_SIMD<eve_t_v_native<ElemType>, eve_t_m_native<ElemType>, ElemType>>(b_native, "eve");
   bench<JULIA_SIMD<mipp_t_v_native<ElemType>, mipp_t_m_native<ElemType>, ElemType>>(b_native, "mipp");

@@ -254,7 +254,7 @@ int main()
   bench1<CONV_SCALAR>(b_native, "scalar");
   bench1<CONV_SIMD<std_simd_t_v_native<int>, int>>(b_native, "std_simd");
   bench1<CONV_SIMD<tsimd_t_v_native<int>, int>>(b_native, "tsimd");
-  //bench1<CONV_SIMD<vcl_t_v_native<int>, int>>(b_native, "vcl");
+  bench1<CONV_SIMD<vcl_t_v_native<int>, int>>(b_native, "vcl");
   bench1<CONV_SIMD<eve_t_v_native<int>, int>>(b_native, "eve");
   bench1<CONV_SIMD<highway_t_v_native<int>, int>>(b_native, "highway");
   bench1<CONV_SIMD<mipp_t_v_native<int>, int>>(b_native, "mipp");
@@ -268,7 +268,7 @@ int main()
   bench2<CONV_SCALAR>(b_native_2, "scalar");
   bench2<CONV_SIMD<std_simd_t_v_native<int>, int>>(b_native_2, "std_simd");
   bench2<CONV_SIMD<tsimd_t_v_native<int>, int>>(b_native_2, "tsimd");
-  //bench2<CONV_SIMD<vcl_t_v_native<int>, int>>(b_native_2, "vcl");
+  bench2<CONV_SIMD<vcl_t_v_native<int>, int>>(b_native_2, "vcl");
   bench2<CONV_SIMD<eve_t_v_native<int>, int>>(b_native_2, "eve");
   bench2<CONV_SIMD<highway_t_v_native<int>, int>>(b_native_2, "highway");
   bench2<CONV_SIMD<mipp_t_v_native<int>, int>>(b_native_2, "mipp");

@@ -233,14 +233,14 @@ int main()
 
   bench<MANDELBROT_SCALAR>(b_native, "scalar");
   // bench<MANDELBROT_SIMD<scalar_t_v<ElemType>, scalar_t_m<ElemType>, ElemType>>(b_native, "scalar_core");
-  // bench<MANDELBROT_SIMD<xsimd_t_v_native<ElemType>, xsimd_t_m_native<ElemType>, ElemType>>(b_native, "xsimd");
-  // bench<MANDELBROT_SIMD<std_simd_t_v_native<ElemType>, std_simd_t_m_native<ElemType>, ElemType>>(b_native, "std_simd");
-  // bench<MANDELBROT_SIMD<vcl_t_v_native<ElemType>, vcl_t_m_native<ElemType>, ElemType>>(b_native, "vcl");
-  // bench<MANDELBROT_SIMD<highway_t_v_native<ElemType>, highway_t_m_native<ElemType>, ElemType>>(b_native, "highway");
-  bench<MANDELBROT_SIMD<nsimd_t_v_native<ElemType>, nsimd_t_m_native<ElemType>, ElemType>>(b_native, "nsimd");
-  // bench<MANDELBROT_SIMD<tsimd_t_v_native<ElemType>, tsimd_t_m_native<ElemType>, ElemType>>(b_native, "tsimd");
-  // bench<MANDELBROT_SIMD<eve_t_v_native<ElemType>, eve_t_m_native<ElemType>, ElemType>>(b_native, "eve");
-  // bench<MANDELBROT_SIMD<mipp_t_v_native<ElemType>, mipp_t_m_native<ElemType>, ElemType>>(b_native, "mipp");
-  // bench<MANDELBROT_SIMD<vc_t_v_native<ElemType>, vc_t_m_native<ElemType>, ElemType>>(b_native, "vc");
-  // return 0;
+  bench<MANDELBROT_SIMD<xsimd_t_v_native<ElemType>, xsimd_t_m_native<ElemType>, ElemType>>(b_native, "xsimd");
+  bench<MANDELBROT_SIMD<std_simd_t_v_native<ElemType>, std_simd_t_m_native<ElemType>, ElemType>>(b_native, "std_simd");
+  bench<MANDELBROT_SIMD<vcl_t_v_native<ElemType>, vcl_t_m_native<ElemType>, ElemType>>(b_native, "vcl");
+  bench<MANDELBROT_SIMD<highway_t_v_native<ElemType>, highway_t_m_native<ElemType>, ElemType>>(b_native, "highway");
+  // bench<MANDELBROT_SIMD<nsimd_t_v_native<ElemType>, nsimd_t_m_native<ElemType>, ElemType>>(b_native, "nsimd");
+  bench<MANDELBROT_SIMD<tsimd_t_v_native<ElemType>, tsimd_t_m_native<ElemType>, ElemType>>(b_native, "tsimd");
+  bench<MANDELBROT_SIMD<eve_t_v_native<ElemType>, eve_t_m_native<ElemType>, ElemType>>(b_native, "eve");
+  bench<MANDELBROT_SIMD<mipp_t_v_native<ElemType>, mipp_t_m_native<ElemType>, ElemType>>(b_native, "mipp");
+  bench<MANDELBROT_SIMD<vc_t_v_native<ElemType>, vc_t_m_native<ElemType>, ElemType>>(b_native, "vc");
+  return 0;
 }
