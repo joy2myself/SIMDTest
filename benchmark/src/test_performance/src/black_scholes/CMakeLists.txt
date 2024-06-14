@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.25)
 set(BENCH_NAME black_scholes)
 project(${BENCH_NAME}_bench)
-add_compile_options(-O2 -std=c++2a)
 
 set(SIMD_LIBRARY_PATH "../../../../../simd_libraries/" 
                       "../../../../../simd_libraries/eve/include/" 
@@ -12,13 +11,19 @@ set(SIMD_LIBRARY_PATH "../../../../../simd_libraries/"
                       "../../../../../simd_libraries/xsimd/include/" 
                       "../../../../../simd_libraries/nanobench/src/include")
 set(NSIMD_LIBRARY_PATH  ../../../../../simd_libraries/nsimd)
-get_filename_component(ABSOLUTE_NSIMD_LIBRARY_PATH ${NSIMD_LIBRARY_PATH} ABSOLUTE)
 set(EXECUTABLE_OUTPUT_PATH ./bin/)
+
+add_library(${BENCH_NAME}_scalar_object OBJECT
+             scalar_${BENCH_NAME}.cpp
+            )
+target_include_directories(${BENCH_NAME}_scalar_object PRIVATE
+            ${SIMD_LIBRARY_PATH})
+target_compile_options(${BENCH_NAME}_scalar_object PRIVATE -O2 -fno-vectorize)
 
 ##################################################################################################################################
 
 # sse2
-# add black_scholes_sse2
+# add AXPY_sse2
 add_library(${BENCH_NAME}_sse2_object OBJECT
             eve_${BENCH_NAME}.cpp
             vc_${BENCH_NAME}.cpp
@@ -27,32 +32,31 @@ add_library(${BENCH_NAME}_sse2_object OBJECT
             tsimd_${BENCH_NAME}.cpp
             mipp_${BENCH_NAME}.cpp
             xsimd_${BENCH_NAME}.cpp
-            vcl_${BENCH_NAME}.cpp
-            scalar_${BENCH_NAME}.cpp)
+            vcl_${BENCH_NAME}.cpp)
 target_include_directories(${BENCH_NAME}_sse2_object PRIVATE
             ${SIMD_LIBRARY_PATH})
-target_compile_options(${BENCH_NAME}_sse2_object PRIVATE -msse2)
+target_compile_options(${BENCH_NAME}_sse2_object PRIVATE -msse2 -O2 -std=c++2a)
 
-# add black_scholes_nsimd_sse2 object
+# add AXPY_nsimd_sse2 object
 add_library(${BENCH_NAME}_nsimd_sse2_object OBJECT
             nsimd_${BENCH_NAME}.cpp)
 target_include_directories(${BENCH_NAME}_nsimd_sse2_object PRIVATE
             ${SIMD_LIBRARY_PATH})
-target_compile_options(${BENCH_NAME}_nsimd_sse2_object PRIVATE -msse2 -DSSE2 -L${NSIMD_LIBRARY_PATH}/build-sse2-gcc/ -lnsimd_sse2)
+target_compile_options(${BENCH_NAME}_nsimd_sse2_object PRIVATE -msse2 -O2 -std=c++2a -DSSE2 -L${NSIMD_LIBRARY_PATH}/build-sse2-gcc/ -lnsimd_sse2)
 
-#add executable black_scholes_sse2
+#add executable AXPY_sse2
 add_executable(
     ${BENCH_NAME}_sse2
     main_${BENCH_NAME}.cpp
 )
 target_include_directories(${BENCH_NAME}_sse2 PRIVATE
             ${SIMD_LIBRARY_PATH})
-target_link_libraries(${BENCH_NAME}_sse2 ${BENCH_NAME}_nsimd_sse2_object ${ABSOLUTE_NSIMD_LIBRARY_PATH}/build-sse2-gcc/sleef_sse2_f32.o ${ABSOLUTE_NSIMD_LIBRARY_PATH}/build-sse2-gcc/rempitab.o ${BENCH_NAME}_sse2_object)
+target_link_libraries(${BENCH_NAME}_sse2 ${BENCH_NAME}_scalar_object ${BENCH_NAME}_nsimd_sse2_object ${BENCH_NAME}_sse2_object)
 
 ##################################################################################################################################
 
 # sse42
-# add black_scholes_sse42
+# add AXPY_sse42
 add_library(${BENCH_NAME}_sse42_object OBJECT
             eve_${BENCH_NAME}.cpp
             vc_${BENCH_NAME}.cpp
@@ -61,34 +65,25 @@ add_library(${BENCH_NAME}_sse42_object OBJECT
             tsimd_${BENCH_NAME}.cpp
             mipp_${BENCH_NAME}.cpp
             xsimd_${BENCH_NAME}.cpp
-            vcl_${BENCH_NAME}.cpp
-            scalar_${BENCH_NAME}.cpp)
+            vcl_${BENCH_NAME}.cpp)
 target_include_directories(${BENCH_NAME}_sse42_object PRIVATE
             ${SIMD_LIBRARY_PATH})
-target_compile_options(${BENCH_NAME}_sse42_object PRIVATE -msse4.2)
+target_compile_options(${BENCH_NAME}_sse42_object PRIVATE -msse4.2 -O2 -std=c++2a)
 
-# add black_scholes_nsimd_sse42 object
-add_library(${BENCH_NAME}_nsimd_sse42_object OBJECT
-            nsimd_${BENCH_NAME}.cpp)
-target_include_directories(${BENCH_NAME}_nsimd_sse42_object PRIVATE
-            ${SIMD_LIBRARY_PATH})
-target_compile_options(${BENCH_NAME}_nsimd_sse42_object PRIVATE -msse4.2 -DSSE4.2 -L${NSIMD_LIBRARY_PATH}/build-sse42-gcc/ -lnsimd_sse4.2)
-
-#add executable black_scholes_sse42
+#add executable AXPY_sse42
 add_executable(
     ${BENCH_NAME}_sse42
     main_${BENCH_NAME}.cpp
 )
 target_include_directories(${BENCH_NAME}_sse42 PRIVATE
             ${SIMD_LIBRARY_PATH})
-target_link_libraries(${BENCH_NAME}_sse42 ${BENCH_NAME}_nsimd_sse42_object ${ABSOLUTE_NSIMD_LIBRARY_PATH}/build-sse42-gcc/sleefsp.o ${ABSOLUTE_NSIMD_LIBRARY_PATH}/build-sse42-gcc/sleef_sse42_f32.o ${ABSOLUTE_NSIMD_LIBRARY_PATH}/build-sse42-gcc/rempitab.o ${BENCH_NAME}_sse42_object )
-# target_link_libraries(${BENCH_NAME}_sse42 ${BENCH_NAME}_sse42_object)
-# target_compile_options(${BENCH_NAME}_sse42 PRIVATE -DNSIMD_INEFFECTIVE)
+target_link_libraries(${BENCH_NAME}_sse42 ${BENCH_NAME}_scalar_object ${BENCH_NAME}_sse42_object)
+target_compile_options(${BENCH_NAME}_sse42 PRIVATE -DNSIMD_INEFFECTIVE)
 
 ##################################################################################################################################
 
 # avx
-# add black_scholes_avx
+# add AXPY_avx
 add_library(${BENCH_NAME}_avx_object OBJECT
             eve_${BENCH_NAME}.cpp
             vc_${BENCH_NAME}.cpp
@@ -98,31 +93,31 @@ add_library(${BENCH_NAME}_avx_object OBJECT
             mipp_${BENCH_NAME}.cpp
             xsimd_${BENCH_NAME}.cpp
             vcl_${BENCH_NAME}.cpp
-            scalar_${BENCH_NAME}.cpp)
+)
 target_include_directories(${BENCH_NAME}_avx_object PRIVATE
             ${SIMD_LIBRARY_PATH})
-target_compile_options(${BENCH_NAME}_avx_object PRIVATE -mavx)
+target_compile_options(${BENCH_NAME}_avx_object PRIVATE -mavx -O2 -std=c++2a)
 
-# add black_scholes_nsimd_avx object
+# add AXPY_nsimd_avx object
 add_library(${BENCH_NAME}_nsimd_avx_object OBJECT
             nsimd_${BENCH_NAME}.cpp)
 target_include_directories(${BENCH_NAME}_nsimd_avx_object PRIVATE
             ${SIMD_LIBRARY_PATH})
-target_compile_options(${BENCH_NAME}_nsimd_avx_object PRIVATE -mavx -DAVX -L${NSIMD_LIBRARY_PATH}/build-avx-gcc/ -lnsimd_avx)
+target_compile_options(${BENCH_NAME}_nsimd_avx_object PRIVATE -mavx -O2 -std=c++2a -DAVX -L${NSIMD_LIBRARY_PATH}/build-avx-gcc/ -lnsimd_avx)
 
-#add executable black_scholes_avx
+#add executable AXPY_avx
 add_executable(
     ${BENCH_NAME}_avx
     main_${BENCH_NAME}.cpp
 )
 target_include_directories(${BENCH_NAME}_avx PRIVATE
             ${SIMD_LIBRARY_PATH})
-target_link_libraries(${BENCH_NAME}_avx ${BENCH_NAME}_nsimd_avx_object ${ABSOLUTE_NSIMD_LIBRARY_PATH}/build-avx-gcc/sleef_avx_f32.o ${ABSOLUTE_NSIMD_LIBRARY_PATH}/build-avx-gcc/rempitab.o ${BENCH_NAME}_avx_object)
+target_link_libraries(${BENCH_NAME}_avx ${BENCH_NAME}_scalar_object ${BENCH_NAME}_nsimd_avx_object ${BENCH_NAME}_avx_object)
 
 ##################################################################################################################################
 
 # avx2
-# add black_scholes_avx2
+# add AXPY_avx2
 add_library(${BENCH_NAME}_avx2_object OBJECT
             eve_${BENCH_NAME}.cpp
             vc_${BENCH_NAME}.cpp
@@ -132,31 +127,31 @@ add_library(${BENCH_NAME}_avx2_object OBJECT
             mipp_${BENCH_NAME}.cpp
             xsimd_${BENCH_NAME}.cpp
             vcl_${BENCH_NAME}.cpp
-            scalar_${BENCH_NAME}.cpp)
+)
 target_include_directories(${BENCH_NAME}_avx2_object PRIVATE
             ${SIMD_LIBRARY_PATH})
-target_compile_options(${BENCH_NAME}_avx2_object PRIVATE -mavx2)
+target_compile_options(${BENCH_NAME}_avx2_object PRIVATE -mavx2 -O2 -std=c++2a)
 
-# add black_scholes_nsimd_avx2 object
+# add AXPY_nsimd_avx2 object
 add_library(${BENCH_NAME}_nsimd_avx2_object OBJECT
             nsimd_${BENCH_NAME}.cpp)
 target_include_directories(${BENCH_NAME}_nsimd_avx2_object PRIVATE
             ${SIMD_LIBRARY_PATH})
-target_compile_options(${BENCH_NAME}_nsimd_avx2_object PRIVATE -mavx2 -DAVX2 -L${NSIMD_LIBRARY_PATH}/build-avx2-gcc/ -lnsimd_avx2)
+target_compile_options(${BENCH_NAME}_nsimd_avx2_object PRIVATE -mavx2 -O2 -std=c++2a -DAVX2 -L${NSIMD_LIBRARY_PATH}/build-avx2-gcc/ -lnsimd_avx2)
 
-#add executable black_scholes_avx2
+#add executable AXPY_avx2
 add_executable(
     ${BENCH_NAME}_avx2
     main_${BENCH_NAME}.cpp
 )
 target_include_directories(${BENCH_NAME}_avx2 PRIVATE
             ${SIMD_LIBRARY_PATH})
-target_link_libraries(${BENCH_NAME}_avx2 ${BENCH_NAME}_nsimd_avx2_object ${ABSOLUTE_NSIMD_LIBRARY_PATH}/build-avx2-gcc/sleef_avx2_f32.o ${ABSOLUTE_NSIMD_LIBRARY_PATH}/build-avx2-gcc/rempitab.o ${BENCH_NAME}_avx2_object)
+target_link_libraries(${BENCH_NAME}_avx2 ${BENCH_NAME}_scalar_object ${BENCH_NAME}_nsimd_avx2_object ${BENCH_NAME}_avx2_object)
 
 ##################################################################################################################################
 
 # avx2_fma
-# add black_scholes_avx2_fma
+# add AXPY_avx2_fma
 add_library(${BENCH_NAME}_avx2_fma_object OBJECT
             eve_${BENCH_NAME}.cpp
             vc_${BENCH_NAME}.cpp
@@ -166,25 +161,25 @@ add_library(${BENCH_NAME}_avx2_fma_object OBJECT
             mipp_${BENCH_NAME}.cpp
             xsimd_${BENCH_NAME}.cpp
             vcl_${BENCH_NAME}.cpp
-            scalar_${BENCH_NAME}.cpp)
+)
 target_include_directories(${BENCH_NAME}_avx2_fma_object PRIVATE
             ${SIMD_LIBRARY_PATH})
-target_compile_options(${BENCH_NAME}_avx2_fma_object PRIVATE -mavx2 -mfma)
+target_compile_options(${BENCH_NAME}_avx2_fma_object PRIVATE -mavx2 -mfma -O2 -std=c++2a)
 
-# add black_scholes_nsimd_avx2_fma object
+# add AXPY_nsimd_avx2_fma object
 add_library(${BENCH_NAME}_nsimd_avx2_fma_object OBJECT
             nsimd_${BENCH_NAME}.cpp)
 target_include_directories(${BENCH_NAME}_nsimd_avx2_fma_object PRIVATE
             ${SIMD_LIBRARY_PATH})
-target_compile_options(${BENCH_NAME}_nsimd_avx2_fma_object PRIVATE -mavx2 -mfma -DAVX2 -L${NSIMD_LIBRARY_PATH}/build-avx2-gcc/ -lnsimd_avx2)
+target_compile_options(${BENCH_NAME}_nsimd_avx2_fma_object PRIVATE -mavx2 -mfma -O2 -std=c++2a -DAVX2 -L${NSIMD_LIBRARY_PATH}/build-avx2-gcc/ -lnsimd_avx2)
 
-#add executable black_scholes_avx2_fma
+#add executable AXPY_avx2_fma
 add_executable(
     ${BENCH_NAME}_avx2_fma
     main_${BENCH_NAME}.cpp
 )
 target_include_directories(${BENCH_NAME}_avx2_fma PRIVATE
             ${SIMD_LIBRARY_PATH})
-target_link_libraries(${BENCH_NAME}_avx2_fma ${BENCH_NAME}_nsimd_avx2_fma_object ${ABSOLUTE_NSIMD_LIBRARY_PATH}/build-avx2-gcc/sleef_avx2_f32.o ${ABSOLUTE_NSIMD_LIBRARY_PATH}/build-avx2-gcc/rempitab.o ${BENCH_NAME}_avx2_fma_object)
+target_link_libraries(${BENCH_NAME}_avx2_fma ${BENCH_NAME}_scalar_object ${BENCH_NAME}_nsimd_avx2_fma_object ${BENCH_NAME}_avx2_fma_object)
 
 ##################################################################################################################################
