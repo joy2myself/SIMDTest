@@ -7,12 +7,12 @@ using ElemType = float;
 const size_t kN = (1024 * 1024);
 const std::size_t ITERATION = 100;
 
-ElemType *a = new ElemType[kN];
-ElemType *b = new ElemType[kN];
-ElemType *c = new ElemType[kN];
-ElemType *x1 = new ElemType[kN];
-ElemType *x2 = new ElemType[kN];
-ElemType *roots = new ElemType[kN];
+alignas(32) ElemType *a = new ElemType[kN];
+alignas(32) ElemType *b = new ElemType[kN];
+alignas(32) ElemType *c = new ElemType[kN];
+alignas(32) ElemType *x1 = new ElemType[kN];
+alignas(32) ElemType *x2 = new ElemType[kN];
+alignas(32) ElemType *roots = new ElemType[kN];
 
 void test_scalar(ankerl::nanobench::Bench &bench, const ElemType *a, const ElemType *b, const ElemType *c, ElemType *x1, ElemType *x2, ElemType *roots);
 

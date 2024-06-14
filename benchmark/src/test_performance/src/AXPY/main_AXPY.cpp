@@ -9,9 +9,9 @@ const std::size_t LEN = 4;
 const std::size_t ITERATION = 500000;
 
 ElemType a;
-ElemType x[ARRLENGTH]{ 0 };
-ElemType y[ARRLENGTH]{ 0 };
-ElemType res[ARRLENGTH]{ 0 };
+alignas(32) ElemType x[ARRLENGTH]{ 0 };
+alignas(32) ElemType y[ARRLENGTH]{ 0 };
+alignas(32) ElemType res[ARRLENGTH]{ 0 };
 
 void test_scalar(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res);
 

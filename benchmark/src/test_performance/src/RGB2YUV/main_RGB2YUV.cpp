@@ -8,12 +8,12 @@ const std::size_t ARRLENGTH = 512;
 const std::size_t LEN = 4;
 const std::size_t ITERATION = 5000000;
 
-ElemType r[ARRLENGTH] = { 0 };
-ElemType g[ARRLENGTH] = { 0 };
-ElemType b[ARRLENGTH] = { 0 };
-ElemType ya[ARRLENGTH] = { 0 };
-ElemType ua[ARRLENGTH] = { 0 };
-ElemType va[ARRLENGTH] = { 0 };
+alignas(32) ElemType r[ARRLENGTH] = { 0 };
+alignas(32) ElemType g[ARRLENGTH] = { 0 };
+alignas(32) ElemType b[ARRLENGTH] = { 0 };
+alignas(32) ElemType ya[ARRLENGTH] = { 0 };
+alignas(32) ElemType ua[ARRLENGTH] = { 0 };
+alignas(32) ElemType va[ARRLENGTH] = { 0 };
 
 void test_scalar(ankerl::nanobench::Bench &bench, ElemType *ra, ElemType *ga, ElemType *ba, ElemType *ya, ElemType *ua, ElemType *va);
 
