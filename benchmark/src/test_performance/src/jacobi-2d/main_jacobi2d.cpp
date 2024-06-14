@@ -16,9 +16,9 @@ ElemType B[ARRLENGTH][ARRLENGTH];
 
 void test_scalar(ankerl::nanobench::Bench &bench, int tsteps, int n, ElemType A[ARRLENGTH][ARRLENGTH], ElemType B[ARRLENGTH][ARRLENGTH]);
 
-#ifndef NSIMD_INEFFECTIVE
-void test_nsimd(ankerl::nanobench::Bench &bench, int tsteps, int n, ElemType A[ARRLENGTH][ARRLENGTH], ElemType B[ARRLENGTH][ARRLENGTH]);
-#endif
+// #ifndef NSIMD_INEFFECTIVE
+// void test_nsimd(ankerl::nanobench::Bench &bench, int tsteps, int n, ElemType A[ARRLENGTH][ARRLENGTH], ElemType B[ARRLENGTH][ARRLENGTH]);
+// #endif
 
 void test_std_simd(ankerl::nanobench::Bench &bench, int tsteps, int n, ElemType A[ARRLENGTH][ARRLENGTH], ElemType B[ARRLENGTH][ARRLENGTH]);
 void test_vc(ankerl::nanobench::Bench &bench, int tsteps, int n, ElemType A[ARRLENGTH][ARRLENGTH], ElemType B[ARRLENGTH][ARRLENGTH]);
@@ -51,9 +51,9 @@ int main()
 
     test_scalar(b_native, tsteps, n, A, B);
 
-    #ifndef NSIMD_INEFFECTIVE
-    test_nsimd(b_native, tsteps, n, A, B);
-    #endif
+    // #ifndef NSIMD_INEFFECTIVE
+    // test_nsimd(b_native, tsteps, n, A, B);
+    // #endif
     
     test_std_simd(b_native, tsteps, n, A, B);
     test_vc(b_native, tsteps, n, A, B);

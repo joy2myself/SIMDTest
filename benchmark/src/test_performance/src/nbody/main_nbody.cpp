@@ -24,9 +24,9 @@ constexpr float timeStep = 0.0001f;
 
 void test_scalar(ankerl::nanobench::Bench &bench, ElemType *posx, ElemType *posy, ElemType *posz, ElemType *velx, ElemType *vely, ElemType *velz, ElemType *mass, size_t kN);
 
-#ifndef NSIMD_INEFFECTIVE
-void test_nsimd(ankerl::nanobench::Bench &bench, ElemType *posx, ElemType *posy, ElemType *posz, ElemType *velx, ElemType *vely, ElemType *velz, ElemType *mass, size_t kN);
-#endif
+// #ifndef NSIMD_INEFFECTIVE
+// void test_nsimd(ankerl::nanobench::Bench &bench, ElemType *posx, ElemType *posy, ElemType *posz, ElemType *velx, ElemType *vely, ElemType *velz, ElemType *mass, size_t kN);
+// #endif
 
 void test_std_simd(ankerl::nanobench::Bench &bench, ElemType *posx, ElemType *posy, ElemType *posz, ElemType *velx, ElemType *vely, ElemType *velz, ElemType *mass, size_t kN);
 void test_vc(ankerl::nanobench::Bench &bench, ElemType *posx, ElemType *posy, ElemType *posz, ElemType *velx, ElemType *vely, ElemType *velz, ElemType *mass, size_t kN);
@@ -65,9 +65,9 @@ int main()
 
     test_scalar(b_native, posx, posy, posz, velx, vely, velz, mass, kN);
 
-    #ifndef NSIMD_INEFFECTIVE
-    test_nsimd(b_native, posx, posy, posz, velx, vely, velz, mass, kN);
-    #endif
+    // #ifndef NSIMD_INEFFECTIVE
+    // test_nsimd(b_native, posx, posy, posz, velx, vely, velz, mass, kN);
+    // #endif
     
     test_std_simd(b_native, posx, posy, posz, velx, vely, velz, mass, kN);
     test_vc(b_native, posx, posy, posz, velx, vely, velz, mass, kN);

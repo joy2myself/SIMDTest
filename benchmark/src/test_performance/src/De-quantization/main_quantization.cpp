@@ -29,9 +29,9 @@ void Initial()
 
 void test_scalar(ankerl::nanobench::Bench &bench, ElemType dct[64], ElemType dequant_mf[6][64], ElemType i_qp, ElemType res[64]);
 
-#ifndef NSIMD_INEFFECTIVE
-void test_nsimd(ankerl::nanobench::Bench &bench, ElemType dct[64], ElemType dequant_mf[6][64], ElemType i_qp, ElemType res[64]);
-#endif
+// #ifndef NSIMD_INEFFECTIVE
+// void test_nsimd(ankerl::nanobench::Bench &bench, ElemType dct[64], ElemType dequant_mf[6][64], ElemType i_qp, ElemType res[64]);
+// #endif
 
 void test_std_simd(ankerl::nanobench::Bench &bench, ElemType dct[64], ElemType dequant_mf[6][64], ElemType i_qp, ElemType res[64]);
 void test_vc(ankerl::nanobench::Bench &bench, ElemType dct[64], ElemType dequant_mf[6][64], ElemType i_qp, ElemType res[64]);
@@ -51,9 +51,9 @@ int main()
 
     test_scalar(b_native, dct, dequant_mf, i_qp, res);
 
-    #ifndef NSIMD_INEFFECTIVE
-    test_nsimd(b_native, dct, dequant_mf, i_qp, res);
-    #endif
+    // #ifndef NSIMD_INEFFECTIVE
+    // test_nsimd(b_native, dct, dequant_mf, i_qp, res);
+    // #endif
     
     test_eve(b_native, dct, dequant_mf, i_qp, res);
     test_std_simd(b_native, dct, dequant_mf, i_qp, res);

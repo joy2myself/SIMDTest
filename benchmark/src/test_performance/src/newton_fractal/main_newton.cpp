@@ -34,9 +34,9 @@ Color *image = new Color[nx * ny];
 
 void test_scalar(ankerl::nanobench::Bench &bench, ElemType xmin, ElemType xmax, size_t nx, ElemType ymin, ElemType ymax, size_t ny, size_t max_iter, Color *image);
 
-#ifndef NSIMD_INEFFECTIVE
-void test_nsimd(ankerl::nanobench::Bench &bench, ElemType xmin, ElemType xmax, size_t nx, ElemType ymin, ElemType ymax, size_t ny, size_t max_iter, Color *image);
-#endif
+// #ifndef NSIMD_INEFFECTIVE
+// void test_nsimd(ankerl::nanobench::Bench &bench, ElemType xmin, ElemType xmax, size_t nx, ElemType ymin, ElemType ymax, size_t ny, size_t max_iter, Color *image);
+// #endif
 
 void test_std_simd(ankerl::nanobench::Bench &bench, ElemType xmin, ElemType xmax, size_t nx, ElemType ymin, ElemType ymax, size_t ny, size_t max_iter, Color *image);
 void test_vc(ankerl::nanobench::Bench &bench, ElemType xmin, ElemType xmax, size_t nx, ElemType ymin, ElemType ymax, size_t ny, size_t max_iter, Color *image);
@@ -58,9 +58,9 @@ int main()
 
     test_scalar(b_native, xmin, xmax, nx, ymin, ymax, ny, max_iter, image);
 
-    #ifndef NSIMD_INEFFECTIVE
-    test_nsimd(b_native, xmin, xmax, nx, ymin, ymax, ny, max_iter, image);
-    #endif
+    // #ifndef NSIMD_INEFFECTIVE
+    // test_nsimd(b_native, xmin, xmax, nx, ymin, ymax, ny, max_iter, image);
+    // #endif
     
     test_std_simd(b_native, xmin, xmax, nx, ymin, ymax, ny, max_iter, image);
     test_vc(b_native, xmin, xmax, nx, ymin, ymax, ny, max_iter, image);

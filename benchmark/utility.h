@@ -19,7 +19,7 @@
 #include "eve/wide.hpp"
 #include "hwy/contrib/math/math-inl.h"
 #include "hwy/highway.h"
-#include "nsimd/nsimd-all.hpp"
+// #include "nsimd/nsimd-all.hpp"
 // #include <Vc/Vc>
 
 namespace ex = std::experimental::parallelism_v2;
