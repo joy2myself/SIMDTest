@@ -37,12 +37,12 @@ target_include_directories(${BENCH_NAME}_sse2_object PRIVATE
             ${SIMD_LIBRARY_PATH})
 target_compile_options(${BENCH_NAME}_sse2_object PRIVATE -msse2 -O2 -std=c++2a)
 
-# add AXPY_nsimd_sse2 object
-add_library(${BENCH_NAME}_nsimd_sse2_object OBJECT
-            nsimd_${BENCH_NAME}.cpp)
-target_include_directories(${BENCH_NAME}_nsimd_sse2_object PRIVATE
-            ${SIMD_LIBRARY_PATH})
-target_compile_options(${BENCH_NAME}_nsimd_sse2_object PRIVATE -msse2 -O2 -std=c++2a -DSSE2 -L${NSIMD_LIBRARY_PATH}/build-sse2-gcc/ -lnsimd_sse2)
+# # add AXPY_nsimd_sse2 object
+# add_library(${BENCH_NAME}_nsimd_sse2_object OBJECT
+#             nsimd_${BENCH_NAME}.cpp)
+# target_include_directories(${BENCH_NAME}_nsimd_sse2_object PRIVATE
+#             ${SIMD_LIBRARY_PATH})
+# target_compile_options(${BENCH_NAME}_nsimd_sse2_object PRIVATE -msse2 -O2 -std=c++2a -DSSE2 -L${NSIMD_LIBRARY_PATH}/build-sse2-gcc/ -lnsimd_sse2)
 
 #add executable AXPY_sse2
 add_executable(
@@ -51,7 +51,7 @@ add_executable(
 )
 target_include_directories(${BENCH_NAME}_sse2 PRIVATE
             ${SIMD_LIBRARY_PATH})
-target_link_libraries(${BENCH_NAME}_sse2 ${BENCH_NAME}_scalar_object ${BENCH_NAME}_nsimd_sse2_object ${BENCH_NAME}_sse2_object)
+target_link_libraries(${BENCH_NAME}_sse2 ${BENCH_NAME}_scalar_object ${BENCH_NAME}_sse2_object)
 
 ##################################################################################################################################
 
@@ -78,7 +78,7 @@ add_executable(
 target_include_directories(${BENCH_NAME}_sse42 PRIVATE
             ${SIMD_LIBRARY_PATH})
 target_link_libraries(${BENCH_NAME}_sse42 ${BENCH_NAME}_scalar_object ${BENCH_NAME}_sse42_object)
-target_compile_options(${BENCH_NAME}_sse42 PRIVATE -DNSIMD_INEFFECTIVE)
+# target_compile_options(${BENCH_NAME}_sse42 PRIVATE -DNSIMD_INEFFECTIVE)
 
 ##################################################################################################################################
 
@@ -98,12 +98,12 @@ target_include_directories(${BENCH_NAME}_avx_object PRIVATE
             ${SIMD_LIBRARY_PATH})
 target_compile_options(${BENCH_NAME}_avx_object PRIVATE -mavx -O2 -std=c++2a)
 
-# add AXPY_nsimd_avx object
-add_library(${BENCH_NAME}_nsimd_avx_object OBJECT
-            nsimd_${BENCH_NAME}.cpp)
-target_include_directories(${BENCH_NAME}_nsimd_avx_object PRIVATE
-            ${SIMD_LIBRARY_PATH})
-target_compile_options(${BENCH_NAME}_nsimd_avx_object PRIVATE -mavx -O2 -std=c++2a -DAVX -L${NSIMD_LIBRARY_PATH}/build-avx-gcc/ -lnsimd_avx)
+# # add AXPY_nsimd_avx object
+# add_library(${BENCH_NAME}_nsimd_avx_object OBJECT
+#             nsimd_${BENCH_NAME}.cpp)
+# target_include_directories(${BENCH_NAME}_nsimd_avx_object PRIVATE
+#             ${SIMD_LIBRARY_PATH})
+# target_compile_options(${BENCH_NAME}_nsimd_avx_object PRIVATE -mavx -O2 -std=c++2a -DAVX -L${NSIMD_LIBRARY_PATH}/build-avx-gcc/ -lnsimd_avx)
 
 #add executable AXPY_avx
 add_executable(
@@ -112,7 +112,7 @@ add_executable(
 )
 target_include_directories(${BENCH_NAME}_avx PRIVATE
             ${SIMD_LIBRARY_PATH})
-target_link_libraries(${BENCH_NAME}_avx ${BENCH_NAME}_scalar_object ${BENCH_NAME}_nsimd_avx_object ${BENCH_NAME}_avx_object)
+target_link_libraries(${BENCH_NAME}_avx ${BENCH_NAME}_scalar_object ${BENCH_NAME}_avx_object)
 
 ##################################################################################################################################
 
@@ -133,11 +133,11 @@ target_include_directories(${BENCH_NAME}_avx2_object PRIVATE
 target_compile_options(${BENCH_NAME}_avx2_object PRIVATE -mavx2 -O2 -std=c++2a)
 
 # add AXPY_nsimd_avx2 object
-add_library(${BENCH_NAME}_nsimd_avx2_object OBJECT
-            nsimd_${BENCH_NAME}.cpp)
-target_include_directories(${BENCH_NAME}_nsimd_avx2_object PRIVATE
-            ${SIMD_LIBRARY_PATH})
-target_compile_options(${BENCH_NAME}_nsimd_avx2_object PRIVATE -mavx2 -O2 -std=c++2a -DAVX2 -L${NSIMD_LIBRARY_PATH}/build-avx2-gcc/ -lnsimd_avx2)
+# add_library(${BENCH_NAME}_nsimd_avx2_object OBJECT
+#             nsimd_${BENCH_NAME}.cpp)
+# target_include_directories(${BENCH_NAME}_nsimd_avx2_object PRIVATE
+#             ${SIMD_LIBRARY_PATH})
+# target_compile_options(${BENCH_NAME}_nsimd_avx2_object PRIVATE -mavx2 -O2 -std=c++2a -DAVX2 -L${NSIMD_LIBRARY_PATH}/build-avx2-gcc/ -lnsimd_avx2)
 
 #add executable AXPY_avx2
 add_executable(
@@ -146,7 +146,7 @@ add_executable(
 )
 target_include_directories(${BENCH_NAME}_avx2 PRIVATE
             ${SIMD_LIBRARY_PATH})
-target_link_libraries(${BENCH_NAME}_avx2 ${BENCH_NAME}_scalar_object ${BENCH_NAME}_nsimd_avx2_object ${BENCH_NAME}_avx2_object)
+target_link_libraries(${BENCH_NAME}_avx2 ${BENCH_NAME}_scalar_object ${BENCH_NAME}_avx2_object)
 
 ##################################################################################################################################
 
@@ -167,11 +167,11 @@ target_include_directories(${BENCH_NAME}_avx2_fma_object PRIVATE
 target_compile_options(${BENCH_NAME}_avx2_fma_object PRIVATE -mavx2 -mfma -O2 -std=c++2a)
 
 # add AXPY_nsimd_avx2_fma object
-add_library(${BENCH_NAME}_nsimd_avx2_fma_object OBJECT
-            nsimd_${BENCH_NAME}.cpp)
-target_include_directories(${BENCH_NAME}_nsimd_avx2_fma_object PRIVATE
-            ${SIMD_LIBRARY_PATH})
-target_compile_options(${BENCH_NAME}_nsimd_avx2_fma_object PRIVATE -mavx2 -mfma -O2 -std=c++2a -DAVX2 -L${NSIMD_LIBRARY_PATH}/build-avx2-gcc/ -lnsimd_avx2)
+# add_library(${BENCH_NAME}_nsimd_avx2_fma_object OBJECT
+#             nsimd_${BENCH_NAME}.cpp)
+# target_include_directories(${BENCH_NAME}_nsimd_avx2_fma_object PRIVATE
+#             ${SIMD_LIBRARY_PATH})
+# target_compile_options(${BENCH_NAME}_nsimd_avx2_fma_object PRIVATE -mavx2 -mfma -O2 -std=c++2a -DAVX2 -L${NSIMD_LIBRARY_PATH}/build-avx2-gcc/ -lnsimd_avx2)
 
 #add executable AXPY_avx2_fma
 add_executable(
@@ -180,6 +180,6 @@ add_executable(
 )
 target_include_directories(${BENCH_NAME}_avx2_fma PRIVATE
             ${SIMD_LIBRARY_PATH})
-target_link_libraries(${BENCH_NAME}_avx2_fma ${BENCH_NAME}_scalar_object ${BENCH_NAME}_nsimd_avx2_fma_object ${BENCH_NAME}_avx2_fma_object)
+target_link_libraries(${BENCH_NAME}_avx2_fma ${BENCH_NAME}_scalar_object ${BENCH_NAME}_avx2_fma_object)
 
 ##################################################################################################################################
