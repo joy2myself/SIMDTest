@@ -5,10 +5,10 @@
 using ElemType = float;
 
 const std::size_t LEN = 4;
-const std::size_t ITERATION = 5;
+const std::size_t ITERATION = 10000;
 
-const unsigned int _width = 1024;
-const unsigned int _height = 768;
+const unsigned int _width = 16;
+const unsigned int _height = 16;
 const ElemType x_0 = -2;
 const ElemType x_1 = 1;
 const ElemType y_0 = -1;
@@ -36,7 +36,7 @@ int main()
 {
 
     ankerl::nanobench::Bench b_native;
-    b_native.title("mandelbrot_TEST_NATIVE").unit("mandelbrot_NATIVE").warmup(100).relative(true);
+    b_native.title("mandelbrot_TEST_NATIVE").unit("mandelbrot_NATIVE").warmup(10000).relative(true);
     b_native.performanceCounters(true);
 
     test_scalar(b_native, x_0, y_0, x_1, y_1, _width, _height, _maxIters, _buf);

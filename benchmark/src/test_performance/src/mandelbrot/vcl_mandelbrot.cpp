@@ -5,8 +5,7 @@
 
 using ElemType = float;
 
-const std::size_t LEN = 4;
-const std::size_t ITERATION = 5;
+const std::size_t ITERATION = 10000;
 
 ///////////////////////parameters initialization////////////////////////
 
@@ -48,7 +47,7 @@ template<typename Vec, typename Mask, typename Tp> struct MANDELBROT_SIMD
     std::iota(&arange[0], &arange[len], 0.f);
 
     Vec programIndex;
-    details::Load_Aligned(programIndex, &arange[0]);
+    details::Load_Unaligned(programIndex, &arange[0]);
 
     for (int j = 0; j < height; j++)
     {
