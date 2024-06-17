@@ -2,9 +2,7 @@
 #include <nanobench.h>
 using ElemType = float;
 
-const std::size_t ARRLENGTH = 256;
-const std::size_t LEN = 4;
-const std::size_t ITERATION = 500000;
+const std::size_t ITERATION = 10000;
 
 struct MANDELBROT_SCALAR
 {
@@ -114,7 +112,7 @@ void test_scalar(ankerl::nanobench::Bench &bench, ElemType x0,
               std::vector<ElemType> _buf)
 {
   MANDELBROT_SCALAR func;
-  bench.minEpochIterations(ITERATION).run("std_simd", [&]() {
+  bench.minEpochIterations(ITERATION).run("scalar", [&]() {
     func(x0, y0, x1, y1, width, height, maxIters, _buf);
     ankerl::nanobench::doNotOptimizeAway(func);
   });
