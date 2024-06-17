@@ -18,7 +18,12 @@ add_library(${BENCH_NAME}_scalar_object OBJECT
             )
 target_include_directories(${BENCH_NAME}_scalar_object PRIVATE
             ${SIMD_LIBRARY_PATH})
-target_compile_options(${BENCH_NAME}_scalar_object PRIVATE -O2 -fno-vectorize)
+        
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    target_compile_options(${BENCH_NAME}_scalar_object PRIVATE -O2 -fno-vectorize)
+else()
+    target_compile_options(${BENCH_NAME}_scalar_object PRIVATE -O2 -fno-tree-vectorize)
+endif()
 
 ##################################################################################################################################
 
