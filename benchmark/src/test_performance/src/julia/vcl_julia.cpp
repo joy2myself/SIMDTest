@@ -1,5 +1,6 @@
 #include "../../../../include/core/vcl_core.h"
 #include <nanobench.h>
+#include <vector>
 using ElemType = float;
 
 ///////////////////////parameters initialization////////////////////////
@@ -10,12 +11,12 @@ template<typename Vec, typename Mask, typename Tp> struct JULIA_SIMD
   {
     std::size_t len = details::Len<Vec, Tp>();
 
-    Tp index[len]{ 0 };
+    std::vector<Tp> index(len, 0);
     for (size_t i = 0; i < len; ++i)
       index[i] = i;
     Vec iota;
 
-    details::Store_Aligned(iota, index);
+    details::Load_Unaligned(iota, index.data());
 
     Vec dx = details::BroadCast<Vec, Tp>(Tp((xmax - xmin) / nx));
     Vec dy = details::BroadCast<Vec, Tp>(Tp((ymax - ymin) / ny));
