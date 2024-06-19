@@ -11,13 +11,13 @@
 using ElemType = float;
 constexpr auto kNruns = 1;
 constexpr auto kN = 1024;
-float posx[kN];
-float posy[kN];
-float posz[kN];
-float velx[kN];
-float vely[kN];
-float velz[kN];
-float mass[kN];
+alignas(64) float posx[kN];
+alignas(64) float posy[kN];
+alignas(64) float posz[kN];
+alignas(64) float velx[kN];
+alignas(64) float vely[kN];
+alignas(64) float velz[kN];
+alignas(64) float mass[kN];
 
 constexpr float eps2 = 0.01f;
 constexpr float timeStep = 0.0001f;
