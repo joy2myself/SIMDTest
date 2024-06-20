@@ -1,6 +1,6 @@
 #include "../../../../include/core/eve_core.h"
 #include <nanobench.h>
-#include <array>
+#include <vector>
 using ElemType = float;
 
 const std::size_t ITERATION = 500;
@@ -64,12 +64,12 @@ template<typename Vec, typename Mask, typename Tp> struct NEWTON_SIMD
   {
     std::size_t len = details::Len<Vec, Tp>();
 
-    Tp index[len]{ 0 };
+    std::vector<Tp> index(len, 0);
     for (size_t i = 0; i < len; ++i)
       index[i] = i;
     Vec iota;
 
-    details::Store_Aligned(iota, index);
+    details::Load_Unaligned(iota, index.data());
 
     Vec dx = (xmax - xmin) / details::BroadCast<Vec, Tp>(Tp(nx));
     Vec dy = (ymax - ymin) / details::BroadCast<Vec, Tp>(Tp(ny)), dyv = iota * dy;

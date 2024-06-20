@@ -48,12 +48,12 @@ template<typename Vec, typename Mask, typename Tp> struct QUADRATIC_SIMD
     {
       
       Vec a_v, b_v, c_v, x1_v, x2_v, roots_v;
-      details::Load_Aligned(a_v, &a[i]);
-      details::Load_Aligned(b_v, &b[i]);
-      details::Load_Aligned(c_v, &c[i]);
-      details::Load_Aligned(x1_v, &x1[i]);
-      details::Load_Aligned(x2_v, &x2[i]);
-      details::Load_Aligned(roots_v, &roots[i]);
+      details::Load_Unaligned(a_v, &a[i]);
+      details::Load_Unaligned(b_v, &b[i]);
+      details::Load_Unaligned(c_v, &c[i]);
+      details::Load_Unaligned(x1_v, &x1[i]);
+      details::Load_Unaligned(x2_v, &x2[i]);
+      details::Load_Unaligned(roots_v, &roots[i]);
 
       QuadSolveSIMD(
       a_v, 
@@ -64,7 +64,7 @@ template<typename Vec, typename Mask, typename Tp> struct QUADRATIC_SIMD
       roots_v
       );
 
-      details::Store_Aligned(roots_v, &roots[i]);
+      details::Store_Unaligned(roots_v, &roots[i]);
     }
   }
 
