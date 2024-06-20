@@ -9,9 +9,14 @@ set(SIMD_LIBRARY_PATH "../../../../../simd_libraries/"
                       "../../../../../simd_libraries/tsimd/" 
                       "../../../../../simd_libraries/Vc/" 
                       "../../../../../simd_libraries/xsimd/include/" 
-                      "../../../../../simd_libraries/nanobench/src/include")
+                      "../../../../../simd_libraries/nanobench/src/include"
+                      "../../../../../simd_libraries/simd_for_godbolt/include/")
 set(NSIMD_LIBRARY_PATH  ../../../../../simd_libraries/nsimd)
 set(EXECUTABLE_OUTPUT_PATH ./bin/)
+
+if(USE_PLCT_SIMD)
+  add_definitions(-DUSE_PLCT_SIMD)
+endif()
 
 add_library(${BENCH_NAME}_scalar_object OBJECT
              scalar_${BENCH_NAME}.cpp

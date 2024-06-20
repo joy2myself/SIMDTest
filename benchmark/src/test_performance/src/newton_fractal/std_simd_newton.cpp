@@ -128,9 +128,17 @@ template<typename Vec, typename Mask, typename Tp> struct NEWTON_SIMD
 
 void test_std_simd(ankerl::nanobench::Bench &bench, ElemType xmin, ElemType xmax, size_t nx, ElemType ymin, ElemType ymax, size_t ny, size_t max_iter, Color *image)
 {
+#if defined(USE_PLCT_SIMD)
+  NEWTON_SIMD<std_simd_t_v_native<ElemType>, std_simd_t_m_native<ElemType>, ElemType> func;
+  bench.minEpochIterations(ITERATION).run("plct_simd", [&]() {
+    func(xmin, xmax, nx, ymin, ymax, ny, max_iter, image);
+    ankerl::nanobench::doNotOptimizeAway(func);
+  });
+#else
   NEWTON_SIMD<std_simd_t_v_native<ElemType>, std_simd_t_m_native<ElemType>, ElemType> func;
   bench.minEpochIterations(ITERATION).run("std_simd", [&]() {
     func(xmin, xmax, nx, ymin, ymax, ny, max_iter, image);
     ankerl::nanobench::doNotOptimizeAway(func);
   });
+#endif
 }

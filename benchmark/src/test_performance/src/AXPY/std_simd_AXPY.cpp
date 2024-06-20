@@ -29,9 +29,17 @@ template<typename Vec, typename Tp> struct AXPY_SIMD
 
 void test_std_simd(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res)
 {
+#if defined(USE_PLCT_SIMD)
+  AXPY_SIMD<std_simd_t_v_native<ElemType>, ElemType> func;
+  bench.minEpochIterations(ITERATION).run("plct_simd", [&]() {
+    func(a, x, y, res);
+    ankerl::nanobench::doNotOptimizeAway(func);
+  });
+#else
   AXPY_SIMD<std_simd_t_v_native<ElemType>, ElemType> func;
   bench.minEpochIterations(ITERATION).run("std_simd", [&]() {
     func(a, x, y, res);
     ankerl::nanobench::doNotOptimizeAway(func);
   });
+#endif
 }

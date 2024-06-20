@@ -67,9 +67,17 @@ template<typename Vec, typename Tp> struct BLACK_SCHOLES_SIMD
 
 void test_std_simd(ankerl::nanobench::Bench &bench, ElemType *Sa, ElemType *Xa, ElemType *Ta, ElemType *ra, ElemType *va, ElemType *result, const int &count)
 {
-  BLACK_SCHOLES_SIMD<std_simd_t_v_native<ElemType>, ElemType> func;
+#if defined(USE_PLCT_SIMD)
+BLACK_SCHOLES_SIMD<std_simd_t_v_native<ElemType>, ElemType> func;
+  bench.minEpochIterations(ITERATION).run("plct_simd", [&]() {
+    func(Sa, Xa, Ta, ra, va, result, count);
+    ankerl::nanobench::doNotOptimizeAway(func);
+  });
+#else
+BLACK_SCHOLES_SIMD<std_simd_t_v_native<ElemType>, ElemType> func;
   bench.minEpochIterations(ITERATION).run("std_simd", [&]() {
     func(Sa, Xa, Ta, ra, va, result, count);
     ankerl::nanobench::doNotOptimizeAway(func);
   });
+#endif
 }

@@ -41,9 +41,17 @@ template<typename Vec, typename Tp> struct RGB2YUV_SIMD
 
 void test_std_simd(ankerl::nanobench::Bench &bench, ElemType *ra, ElemType *ga, ElemType *ba, ElemType *ya, ElemType *ua, ElemType *va)
 {
+#if defined(USE_PLCT_SIMD)
+  RGB2YUV_SIMD<std_simd_t_v_native<ElemType>, ElemType> func;
+  bench.minEpochIterations(ITERATION).run("plct_simd", [&]() {
+    func(ra, ga, ba, ya, ua, va);
+    ankerl::nanobench::doNotOptimizeAway(func);
+  });
+#else
   RGB2YUV_SIMD<std_simd_t_v_native<ElemType>, ElemType> func;
   bench.minEpochIterations(ITERATION).run("std_simd", [&]() {
     func(ra, ga, ba, ya, ua, va);
     ankerl::nanobench::doNotOptimizeAway(func);
   });
+#endif
 }

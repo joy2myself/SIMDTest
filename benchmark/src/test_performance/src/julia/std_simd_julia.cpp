@@ -64,9 +64,17 @@ template<typename Vec, typename Mask, typename Tp> struct JULIA_SIMD
 
 void test_std_simd(ankerl::nanobench::Bench &bench, ElemType xmin, ElemType xmax, size_t nx, ElemType ymin, ElemType ymax, size_t ny, size_t max_iter, unsigned char *image, ElemType real, ElemType im)
 {
+#if defined(USE_PLCT_SIMD)
+  JULIA_SIMD<std_simd_t_v_native<ElemType>, std_simd_t_m_native<ElemType>, ElemType> func;
+  bench.minEpochIterations(5).run("plct_simd", [&]() {
+    func(xmin, xmax, nx, ymin, ymax, ny, max_iter, image, real, im);
+    ankerl::nanobench::doNotOptimizeAway(func);
+  });
+#else
   JULIA_SIMD<std_simd_t_v_native<ElemType>, std_simd_t_m_native<ElemType>, ElemType> func;
   bench.minEpochIterations(5).run("std_simd", [&]() {
     func(xmin, xmax, nx, ymin, ymax, ny, max_iter, image, real, im);
     ankerl::nanobench::doNotOptimizeAway(func);
   });
+#endif
 }

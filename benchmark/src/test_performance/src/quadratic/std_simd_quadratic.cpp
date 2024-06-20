@@ -77,9 +77,17 @@ template<typename Vec, typename Mask, typename Tp> struct QUADRATIC_SIMD
 
 void test_std_simd(ankerl::nanobench::Bench &bench, const ElemType *a, const ElemType *b, const ElemType *c, ElemType *x1, ElemType *x2, ElemType *roots)
 {
+#if defined(USE_PLCT_SIMD)
+  QUADRATIC_SIMD<std_simd_t_v_native<ElemType>, std_simd_t_m_native<ElemType>, ElemType> func;
+  bench.minEpochIterations(ITERATION).run("plct_simd", [&]() {
+    func(a, b, c, x1, x2, roots);
+    ankerl::nanobench::doNotOptimizeAway(func);
+  });
+#else
   QUADRATIC_SIMD<std_simd_t_v_native<ElemType>, std_simd_t_m_native<ElemType>, ElemType> func;
   bench.minEpochIterations(ITERATION).run("std_simd", [&]() {
     func(a, b, c, x1, x2, roots);
     ankerl::nanobench::doNotOptimizeAway(func);
   });
+#endif
 }

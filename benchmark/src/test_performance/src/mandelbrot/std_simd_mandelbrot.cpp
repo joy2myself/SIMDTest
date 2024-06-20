@@ -94,9 +94,17 @@ void test_std_simd(ankerl::nanobench::Bench &bench, ElemType x0,
               int maxIters,
               std::vector<ElemType> _buf)
 {
+#if defined(USE_PLCT_SIMD)
+  MANDELBROT_SIMD<std_simd_t_v_native<ElemType>, std_simd_t_m_native<ElemType>, ElemType> func;
+  bench.minEpochIterations(ITERATION).run("plct_simd", [&]() {
+    func(x0, y0, x1, y1, width, height, maxIters, _buf);
+    ankerl::nanobench::doNotOptimizeAway(func);
+  });
+#else
   MANDELBROT_SIMD<std_simd_t_v_native<ElemType>, std_simd_t_m_native<ElemType>, ElemType> func;
   bench.minEpochIterations(ITERATION).run("std_simd", [&]() {
     func(x0, y0, x1, y1, width, height, maxIters, _buf);
     ankerl::nanobench::doNotOptimizeAway(func);
   });
+#endif
 }
