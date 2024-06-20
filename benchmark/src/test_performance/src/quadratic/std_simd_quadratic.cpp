@@ -48,12 +48,12 @@ template<typename Vec, typename Mask, typename Tp> struct QUADRATIC_SIMD
     {
       
       Vec a_v, b_v, c_v, x1_v, x2_v, roots_v;
-      details::Load_Aligned(a_v, &a[i]);
-      details::Load_Aligned(b_v, &b[i]);
-      details::Load_Aligned(c_v, &c[i]);
-      details::Load_Aligned(x1_v, &x1[i]);
-      details::Load_Aligned(x2_v, &x2[i]);
-      details::Load_Aligned(roots_v, &roots[i]);
+      details::Load_Unaligned(a_v, &a[i]);
+      details::Load_Unaligned(b_v, &b[i]);
+      details::Load_Unaligned(c_v, &c[i]);
+      details::Load_Unaligned(x1_v, &x1[i]);
+      details::Load_Unaligned(x2_v, &x2[i]);
+      details::Load_Unaligned(roots_v, &roots[i]);
 
       QuadSolveSIMD(
       a_v, 
@@ -64,7 +64,7 @@ template<typename Vec, typename Mask, typename Tp> struct QUADRATIC_SIMD
       roots_v
       );
 
-      details::Store_Aligned(roots_v, &roots[i]);
+      details::Store_Unaligned(roots_v, &roots[i]);
     }
   }
 
@@ -77,9 +77,17 @@ template<typename Vec, typename Mask, typename Tp> struct QUADRATIC_SIMD
 
 void test_std_simd(ankerl::nanobench::Bench &bench, const ElemType *a, const ElemType *b, const ElemType *c, ElemType *x1, ElemType *x2, ElemType *roots)
 {
+#if defined(USE_PLCT_SIMD)
+  QUADRATIC_SIMD<std_simd_t_v_native<ElemType>, std_simd_t_m_native<ElemType>, ElemType> func;
+  bench.minEpochIterations(ITERATION).run("plct_simd", [&]() {
+    func(a, b, c, x1, x2, roots);
+    ankerl::nanobench::doNotOptimizeAway(func);
+  });
+#else
   QUADRATIC_SIMD<std_simd_t_v_native<ElemType>, std_simd_t_m_native<ElemType>, ElemType> func;
   bench.minEpochIterations(ITERATION).run("std_simd", [&]() {
     func(a, b, c, x1, x2, roots);
     ankerl::nanobench::doNotOptimizeAway(func);
   });
+#endif
 }

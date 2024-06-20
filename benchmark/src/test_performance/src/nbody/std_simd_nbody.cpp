@@ -83,9 +83,17 @@ template<typename Vec, typename Tp> struct NBODY_SIMD
 
 void test_std_simd(ankerl::nanobench::Bench &bench, ElemType *posx, ElemType *posy, ElemType *posz, ElemType *velx, ElemType *vely, ElemType *velz, ElemType *mass, size_t kN)
 {
+#if defined(USE_PLCT_SIMD)
+  NBODY_SIMD<std_simd_t_v_native<ElemType>, ElemType> func;
+  bench.minEpochIterations(100).run("plct_simd", [&]() {
+    func(posx, posy, posz, velx, vely, velz, mass, kN);
+    ankerl::nanobench::doNotOptimizeAway(func);
+  });
+#else
   NBODY_SIMD<std_simd_t_v_native<ElemType>, ElemType> func;
   bench.minEpochIterations(100).run("std_simd", [&]() {
     func(posx, posy, posz, velx, vely, velz, mass, kN);
     ankerl::nanobench::doNotOptimizeAway(func);
   });
+#endif
 }

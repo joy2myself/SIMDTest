@@ -63,9 +63,17 @@ template<typename Vec, typename Tp> struct JACOBI_2D_SIMD
 
 void test_std_simd(ankerl::nanobench::Bench &bench, int tsteps, int n, ElemType A[ARRLENGTH][ARRLENGTH], ElemType B[ARRLENGTH][ARRLENGTH])
 {
+#if defined(USE_PLCT_SIMD)
+  JACOBI_2D_SIMD<std_simd_t_v_native<ElemType>, ElemType> func;
+  bench.minEpochIterations(ITERATION).run("plct_simd", [&]() {
+    func(tsteps, n, A, B);
+    ankerl::nanobench::doNotOptimizeAway(func);
+  });
+#else
   JACOBI_2D_SIMD<std_simd_t_v_native<ElemType>, ElemType> func;
   bench.minEpochIterations(ITERATION).run("std_simd", [&]() {
     func(tsteps, n, A, B);
     ankerl::nanobench::doNotOptimizeAway(func);
   });
+#endif
 }

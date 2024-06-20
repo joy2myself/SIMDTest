@@ -27,7 +27,7 @@ void Initial()
 
 const float xmin = -2, xmax = 2;
 const float ymin = -2, ymax = 2;
-const size_t nx = 1024, ny = 1024, max_iter = 1000;
+const size_t nx = 8, ny = 8, max_iter = 4;
 Color *image = new Color[nx * ny];
 
 

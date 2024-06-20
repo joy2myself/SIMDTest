@@ -1,4 +1,8 @@
-#include <experimental/simd>
+#if defined(USE_PLCT_SIMD)
+  #include "simd.h"
+#else
+  #include <experimental/simd>
+#endif
 
 namespace ex = std::experimental::parallelism_v2;
 
@@ -120,7 +124,7 @@ namespace details
   template <typename Tp>
   auto Fabs(const std_simd_t_v_native<Tp> &u)
   {
-    return fabs(u);
+    return abs(u);
   }
 
   /////////////////////////////EXP//////////////////////////////////
