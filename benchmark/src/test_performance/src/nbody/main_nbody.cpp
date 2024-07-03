@@ -1,4 +1,7 @@
 #define ANKERL_NANOBENCH_IMPLEMENT
+#ifndef PLACE_HOLDER
+#define PLACE_HOLDER 1
+#endif
 #include <cstdlib>
 #include <nanobench.h>
 #include <cmath>
@@ -31,7 +34,9 @@ void test_scalar(ankerl::nanobench::Bench &bench, ElemType *posx, ElemType *posy
 void test_std_simd(ankerl::nanobench::Bench &bench, ElemType *posx, ElemType *posy, ElemType *posz, ElemType *velx, ElemType *vely, ElemType *velz, ElemType *mass, size_t kN);
 void test_vc(ankerl::nanobench::Bench &bench, ElemType *posx, ElemType *posy, ElemType *posz, ElemType *velx, ElemType *vely, ElemType *velz, ElemType *mass, size_t kN);
 void test_tsimd(ankerl::nanobench::Bench &bench, ElemType *posx, ElemType *posy, ElemType *posz, ElemType *velx, ElemType *vely, ElemType *velz, ElemType *mass, size_t kN);
-void test_vcl(ankerl::nanobench::Bench &bench, ElemType *posx, ElemType *posy, ElemType *posz, ElemType *velx, ElemType *vely, ElemType *velz, ElemType *mass, size_t kN);
+#if defined(__x86_64__) || defined(_M_X64)
+  void test_vcl(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res);
+#endif
 void test_highway(ankerl::nanobench::Bench &bench, ElemType *posx, ElemType *posy, ElemType *posz, ElemType *velx, ElemType *vely, ElemType *velz, ElemType *mass, size_t kN);
 void test_mipp(ankerl::nanobench::Bench &bench, ElemType *posx, ElemType *posy, ElemType *posz, ElemType *velx, ElemType *vely, ElemType *velz, ElemType *mass, size_t kN);
 void test_eve(ankerl::nanobench::Bench &bench, ElemType *posx, ElemType *posy, ElemType *posz, ElemType *velx, ElemType *vely, ElemType *velz, ElemType *mass, size_t kN);
@@ -74,7 +79,13 @@ int main()
     test_highway(b_native, posx, posy, posz, velx, vely, velz, mass, kN);
     test_tsimd(b_native, posx, posy, posz, velx, vely, velz, mass, kN);
     test_mipp(b_native, posx, posy, posz, velx, vely, velz, mass, kN);
-    test_xsimd(b_native, posx, posy, posz, velx, vely, velz, mass, kN);
-    test_vcl(b_native, posx, posy, posz, velx, vely, velz, mass, kN);
-    test_eve(b_native, posx, posy, posz, velx, vely, velz, mass, kN);
+
+    #if defined(__x86_64__) || defined(_M_X64)
+      test_vcl(b_native, posx, posy, posz, velx, vely, velz, mass, kN);
+    #endif
+
+    if (PLACE_HOLDER){
+      test_xsimd(b_native, posx, posy, posz, velx, vely, velz, mass, kN);
+      test_eve(b_native, posx, posy, posz, velx, vely, velz, mass, kN);
+    }
 }

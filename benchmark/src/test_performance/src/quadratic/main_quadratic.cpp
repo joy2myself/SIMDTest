@@ -1,4 +1,7 @@
 #define ANKERL_NANOBENCH_IMPLEMENT
+#ifndef PLACE_HOLDER
+#define PLACE_HOLDER 1
+#endif
 #include <cstdlib>
 #include <nanobench.h>
 
@@ -23,7 +26,9 @@ void test_scalar(ankerl::nanobench::Bench &bench, const ElemType *a, const ElemT
 void test_std_simd(ankerl::nanobench::Bench &bench, const ElemType *a, const ElemType *b, const ElemType *c, ElemType *x1, ElemType *x2, ElemType *roots);
 void test_vc(ankerl::nanobench::Bench &bench, const ElemType *a, const ElemType *b, const ElemType *c, ElemType *x1, ElemType *x2, ElemType *roots);
 void test_tsimd(ankerl::nanobench::Bench &bench, const ElemType *a, const ElemType *b, const ElemType *c, ElemType *x1, ElemType *x2, ElemType *roots);
-void test_vcl(ankerl::nanobench::Bench &bench, const ElemType *a, const ElemType *b, const ElemType *c, ElemType *x1, ElemType *x2, ElemType *roots);
+#if defined(__x86_64__) || defined(_M_X64)
+  void test_vcl(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res);
+#endif
 void test_highway(ankerl::nanobench::Bench &bench, const ElemType *a, const ElemType *b, const ElemType *c, ElemType *x1, ElemType *x2, ElemType *roots);
 void test_mipp(ankerl::nanobench::Bench &bench, const ElemType *a, const ElemType *b, const ElemType *c, ElemType *x1, ElemType *x2, ElemType *roots);
 void test_eve(ankerl::nanobench::Bench &bench, const ElemType *a, const ElemType *b, const ElemType *c, ElemType *x1, ElemType *x2, ElemType *roots);
@@ -59,12 +64,18 @@ int main()
     
     test_std_simd(b_native, a, b, c, x1, x2, roots);
     test_vc(b_native, a, b, c, x1, x2, roots);
-    test_highway(b_native, a, b, c, x1, x2, roots);
     test_tsimd(b_native, a, b, c, x1, x2, roots);
     test_mipp(b_native, a, b, c, x1, x2, roots);
-    test_xsimd(b_native, a, b, c, x1, x2, roots);
-    test_vcl(b_native, a, b, c, x1, x2, roots);
-    test_eve(b_native, a, b, c, x1, x2, roots);
+
+    #if defined(__x86_64__) || defined(_M_X64)
+      test_vcl(b_native, a, b, c, x1, x2, roots);
+    #endif
+
+    if (PLACE_HOLDER){
+      test_highway(b_native, a, b, c, x1, x2, roots);
+      test_xsimd(b_native, a, b, c, x1, x2, roots);
+      test_eve(b_native, a, b, c, x1, x2, roots);
+    }
 
     delete[] a;
     delete[] b;

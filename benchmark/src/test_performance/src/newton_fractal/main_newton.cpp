@@ -1,4 +1,7 @@
 #define ANKERL_NANOBENCH_IMPLEMENT
+#ifndef PLACE_HOLDER
+#define PLACE_HOLDER 1
+#endif
 #include <cstdlib>
 #include <nanobench.h>
 
@@ -41,7 +44,9 @@ void test_scalar(ankerl::nanobench::Bench &bench, ElemType xmin, ElemType xmax, 
 void test_std_simd(ankerl::nanobench::Bench &bench, ElemType xmin, ElemType xmax, size_t nx, ElemType ymin, ElemType ymax, size_t ny, size_t max_iter, Color *image);
 void test_vc(ankerl::nanobench::Bench &bench, ElemType xmin, ElemType xmax, size_t nx, ElemType ymin, ElemType ymax, size_t ny, size_t max_iter, Color *image);
 void test_tsimd(ankerl::nanobench::Bench &bench, ElemType xmin, ElemType xmax, size_t nx, ElemType ymin, ElemType ymax, size_t ny, size_t max_iter, Color *image);
-void test_vcl(ankerl::nanobench::Bench &bench, ElemType xmin, ElemType xmax, size_t nx, ElemType ymin, ElemType ymax, size_t ny, size_t max_iter, Color *image);
+#if defined(__x86_64__) || defined(_M_X64)
+  void test_vcl(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res);
+#endif
 void test_highway(ankerl::nanobench::Bench &bench, ElemType xmin, ElemType xmax, size_t nx, ElemType ymin, ElemType ymax, size_t ny, size_t max_iter, Color *image);
 void test_mipp(ankerl::nanobench::Bench &bench, ElemType xmin, ElemType xmax, size_t nx, ElemType ymin, ElemType ymax, size_t ny, size_t max_iter, Color *image);
 void test_eve(ankerl::nanobench::Bench &bench, ElemType xmin, ElemType xmax, size_t nx, ElemType ymin, ElemType ymax, size_t ny, size_t max_iter, Color *image);
@@ -64,10 +69,16 @@ int main()
     
     test_std_simd(b_native, xmin, xmax, nx, ymin, ymax, ny, max_iter, image);
     test_vc(b_native, xmin, xmax, nx, ymin, ymax, ny, max_iter, image);
-    test_highway(b_native, xmin, xmax, nx, ymin, ymax, ny, max_iter, image);
     test_tsimd(b_native, xmin, xmax, nx, ymin, ymax, ny, max_iter, image);
     test_mipp(b_native, xmin, xmax, nx, ymin, ymax, ny, max_iter, image);
-    test_xsimd(b_native, xmin, xmax, nx, ymin, ymax, ny, max_iter, image);
-    test_vcl(b_native, xmin, xmax, nx, ymin, ymax, ny, max_iter, image);
-    test_eve(b_native, xmin, xmax, nx, ymin, ymax, ny, max_iter, image);
+
+    #if defined(__x86_64__) || defined(_M_X64)
+      test_vcl(b_native, xmin, xmax, nx, ymin, ymax, ny, max_iter, image);
+    #endif
+
+    if (PLACE_HOLDER){
+      test_highway(b_native, xmin, xmax, nx, ymin, ymax, ny, max_iter, image);
+      test_xsimd(b_native, xmin, xmax, nx, ymin, ymax, ny, max_iter, image);
+      test_eve(b_native, xmin, xmax, nx, ymin, ymax, ny, max_iter, image);
+    }
 }

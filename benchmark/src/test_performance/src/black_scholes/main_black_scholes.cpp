@@ -1,4 +1,7 @@
 #define ANKERL_NANOBENCH_IMPLEMENT
+#ifndef PLACE_HOLDER
+#define PLACE_HOLDER 1
+#endif
 #include <cstdlib>
 #include <nanobench.h>
 
@@ -24,7 +27,9 @@ void test_scalar(ankerl::nanobench::Bench &bench, ElemType *Sa, ElemType *Xa, El
 void test_std_simd(ankerl::nanobench::Bench &bench, ElemType *Sa, ElemType *Xa, ElemType *Ta, ElemType *ra, ElemType *va, ElemType *result, const int &count);
 void test_vc(ankerl::nanobench::Bench &bench, ElemType *Sa, ElemType *Xa, ElemType *Ta, ElemType *ra, ElemType *va, ElemType *result, const int &count);
 void test_tsimd(ankerl::nanobench::Bench &bench, ElemType *Sa, ElemType *Xa, ElemType *Ta, ElemType *ra, ElemType *va, ElemType *result, const int &count);
-void test_vcl(ankerl::nanobench::Bench &bench, ElemType *Sa, ElemType *Xa, ElemType *Ta, ElemType *ra, ElemType *va, ElemType *result, const int &count);
+#if defined(__x86_64__) || defined(_M_X64)
+  void test_vcl(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res);
+#endif
 void test_highway(ankerl::nanobench::Bench &bench, ElemType *Sa, ElemType *Xa, ElemType *Ta, ElemType *ra, ElemType *va, ElemType *result, const int &count);
 void test_mipp(ankerl::nanobench::Bench &bench, ElemType *Sa, ElemType *Xa, ElemType *Ta, ElemType *ra, ElemType *va, ElemType *result, const int &count);
 void test_eve(ankerl::nanobench::Bench &bench, ElemType *Sa, ElemType *Xa, ElemType *Ta, ElemType *ra, ElemType *va, ElemType *result, const int &count);
@@ -58,12 +63,18 @@ int main()
     
     test_std_simd(b_native, S, X, T, r, v, result, ARRLENGTH);
     test_vc(b_native, S, X, T, r, v, result, ARRLENGTH);
-    test_highway(b_native, S, X, T, r, v, result, ARRLENGTH);
     test_tsimd(b_native, S, X, T, r, v, result, ARRLENGTH);
     test_mipp(b_native, S, X, T, r, v, result, ARRLENGTH);
-    test_xsimd(b_native, S, X, T, r, v, result, ARRLENGTH);
-    test_vcl(b_native, S, X, T, r, v, result, ARRLENGTH);
-    test_eve(b_native, S, X, T, r, v, result, ARRLENGTH);
+
+    #if defined(__x86_64__) || defined(_M_X64)
+      test_vcl(b_native, S, X, T, r, v, result, ARRLENGTH);
+    #endif
+
+    if (PLACE_HOLDER){
+      test_highway(b_native, S, X, T, r, v, result, ARRLENGTH);
+      test_xsimd(b_native, S, X, T, r, v, result, ARRLENGTH);
+      test_eve(b_native, S, X, T, r, v, result, ARRLENGTH);
+    }
 }
 
 

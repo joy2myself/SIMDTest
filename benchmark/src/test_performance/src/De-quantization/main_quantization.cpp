@@ -1,4 +1,7 @@
 #define ANKERL_NANOBENCH_IMPLEMENT
+#ifndef PLACE_HOLDER
+#define PLACE_HOLDER 1
+#endif
 #include <cstdlib>
 #include <nanobench.h>
 
@@ -36,7 +39,9 @@ void test_scalar(ankerl::nanobench::Bench &bench, ElemType dct[64], ElemType deq
 void test_std_simd(ankerl::nanobench::Bench &bench, ElemType dct[64], ElemType dequant_mf[6][64], ElemType i_qp, ElemType res[64]);
 void test_vc(ankerl::nanobench::Bench &bench, ElemType dct[64], ElemType dequant_mf[6][64], ElemType i_qp, ElemType res[64]);
 void test_tsimd(ankerl::nanobench::Bench &bench, ElemType dct[64], ElemType dequant_mf[6][64], ElemType i_qp, ElemType res[64]);
-void test_vcl(ankerl::nanobench::Bench &bench, ElemType dct[64], ElemType dequant_mf[6][64], ElemType i_qp, ElemType res[64]);
+#if defined(__x86_64__) || defined(_M_X64)
+  void test_vcl(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res);
+#endif
 void test_highway(ankerl::nanobench::Bench &bench, ElemType dct[64], ElemType dequant_mf[6][64], ElemType i_qp, ElemType res[64]);
 void test_mipp(ankerl::nanobench::Bench &bench, ElemType dct[64], ElemType dequant_mf[6][64], ElemType i_qp, ElemType res[64]);
 void test_eve(ankerl::nanobench::Bench &bench, ElemType dct[64], ElemType dequant_mf[6][64], ElemType i_qp, ElemType res[64]);
@@ -55,12 +60,17 @@ int main()
     // test_nsimd(b_native, dct, dequant_mf, i_qp, res);
     // #endif
     
-    test_eve(b_native, dct, dequant_mf, i_qp, res);
     test_std_simd(b_native, dct, dequant_mf, i_qp, res);
     test_vc(b_native, dct, dequant_mf, i_qp, res);
-    test_highway(b_native, dct, dequant_mf, i_qp, res);
     test_tsimd(b_native, dct, dequant_mf, i_qp, res);
-    test_xsimd(b_native, dct, dequant_mf, i_qp, res);
-    test_vcl(b_native, dct, dequant_mf, i_qp, res);
-    test_mipp(b_native, dct, dequant_mf, i_qp, res);
+
+    #if defined(__x86_64__) || defined(_M_X64)
+      test_vcl(b_native, dct, dequant_mf, i_qp, res);
+    #endif
+
+    if (PLACE_HOLDER){
+      test_highway(b_native, dct, dequant_mf, i_qp, res);
+      test_xsimd(b_native, dct, dequant_mf, i_qp, res);
+      test_eve(b_native, dct, dequant_mf, i_qp, res);
+    }
 }

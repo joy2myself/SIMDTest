@@ -1,4 +1,7 @@
 #define ANKERL_NANOBENCH_IMPLEMENT
+#ifndef PLACE_HOLDER
+#define PLACE_HOLDER 1
+#endif
 #include <cstdlib>
 #include <nanobench.h>
 
@@ -23,7 +26,9 @@ void test_scalar(ankerl::nanobench::Bench &bench, int tsteps, int n, ElemType A[
 void test_std_simd(ankerl::nanobench::Bench &bench, int tsteps, int n, ElemType A[ARRLENGTH][ARRLENGTH], ElemType B[ARRLENGTH][ARRLENGTH]);
 void test_vc(ankerl::nanobench::Bench &bench, int tsteps, int n, ElemType A[ARRLENGTH][ARRLENGTH], ElemType B[ARRLENGTH][ARRLENGTH]);
 void test_tsimd(ankerl::nanobench::Bench &bench, int tsteps, int n, ElemType A[ARRLENGTH][ARRLENGTH], ElemType B[ARRLENGTH][ARRLENGTH]);
-void test_vcl(ankerl::nanobench::Bench &bench, int tsteps, int n, ElemType A[ARRLENGTH][ARRLENGTH], ElemType B[ARRLENGTH][ARRLENGTH]);
+#if defined(__x86_64__) || defined(_M_X64)
+  void test_vcl(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res);
+#endif
 void test_highway(ankerl::nanobench::Bench &bench, int tsteps, int n, ElemType A[ARRLENGTH][ARRLENGTH], ElemType B[ARRLENGTH][ARRLENGTH]);
 void test_mipp(ankerl::nanobench::Bench &bench, int tsteps, int n, ElemType A[ARRLENGTH][ARRLENGTH], ElemType B[ARRLENGTH][ARRLENGTH]);
 void test_eve(ankerl::nanobench::Bench &bench, int tsteps, int n, ElemType A[ARRLENGTH][ARRLENGTH], ElemType B[ARRLENGTH][ARRLENGTH]);
@@ -60,7 +65,13 @@ int main()
     test_highway(b_native, tsteps, n, A, B);
     test_tsimd(b_native, tsteps, n, A, B);
     test_mipp(b_native, tsteps, n, A, B);
-    test_xsimd(b_native, tsteps, n, A, B);
-    test_vcl(b_native, tsteps, n, A, B);
-    test_eve(b_native, tsteps, n, A, B);
+
+    #if defined(__x86_64__) || defined(_M_X64)
+      test_vcl(b_native, tsteps, n, A, B);
+    #endif
+
+    if (PLACE_HOLDER){
+      test_xsimd(b_native, tsteps, n, A, B);
+      test_eve(b_native, tsteps, n, A, B);
+    }
 }
