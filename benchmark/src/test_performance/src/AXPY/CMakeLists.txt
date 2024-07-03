@@ -269,5 +269,37 @@ elseif (CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86_64|AMD64)$")
     target_link_libraries(${BENCH_NAME}_avx2_fma ${BENCH_NAME}_scalar_object ${BENCH_NAME}_avx2_fma_object)
 
     ##################################################################################################################################
+
+    # avx512
+    # add AXPY_avx512
+    add_library(${BENCH_NAME}_avx512_object OBJECT
+                eve_${BENCH_NAME}.cpp
+                vc_${BENCH_NAME}.cpp
+                std_simd_${BENCH_NAME}.cpp
+                highway_${BENCH_NAME}.cpp
+                tsimd_${BENCH_NAME}.cpp
+                mipp_${BENCH_NAME}.cpp
+                xsimd_${BENCH_NAME}.cpp
+                vcl_${BENCH_NAME}.cpp
+    )
+    target_include_directories(${BENCH_NAME}_avx512_object PRIVATE
+                ${SIMD_LIBRARY_PATH})
+    target_compile_options(${BENCH_NAME}_avx512_object PRIVATE -mavx512bw -mavx512vl -mavx512f -mavx512cd -mavx512dq -O2 -std=c++2a)
+
+    # add AXPY_nsimd_avx512 object
+    # add_library(${BENCH_NAME}_nsimd_avx512_object OBJECT
+    #             nsimd_${BENCH_NAME}.cpp)
+    # target_include_directories(${BENCH_NAME}_nsimd_avx512_object PRIVATE
+    #             ${SIMD_LIBRARY_PATH})
+    # target_compile_options(${BENCH_NAME}_nsimd_avx512_object PRIVATE -mavx2 -mfma -O2 -std=c++2a -DAVX2 -L${NSIMD_LIBRARY_PATH}/build-avx2-gcc/ -lnsimd_avx2)
+
+    #add executable AXPY_avx512
+    add_executable(
+        ${BENCH_NAME}_avx512
+        main_${BENCH_NAME}.cpp
+    )
+    target_include_directories(${BENCH_NAME}_avx512 PRIVATE
+                ${SIMD_LIBRARY_PATH})
+    target_link_libraries(${BENCH_NAME}_avx512 ${BENCH_NAME}_scalar_object ${BENCH_NAME}_avx512_object)
 endif()
 
