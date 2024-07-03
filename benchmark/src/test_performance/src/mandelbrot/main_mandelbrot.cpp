@@ -30,7 +30,7 @@ void test_std_simd(ankerl::nanobench::Bench &bench, ElemType x0, ElemType y0, El
 void test_vc(ankerl::nanobench::Bench &bench, ElemType x0, ElemType y0, ElemType x1, ElemType y1, int width, int height, int maxIters, std::vector<ElemType> _buf);
 void test_tsimd(ankerl::nanobench::Bench &bench, ElemType x0, ElemType y0, ElemType x1, ElemType y1, int width, int height, int maxIters, std::vector<ElemType> _buf);
 #if defined(__x86_64__) || defined(_M_X64)
-  void test_vcl(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res);
+  void test_vcl(ankerl::nanobench::Bench &bench, ElemType x0, ElemType y0, ElemType x1, ElemType y1, int width, int height, int maxIters, std::vector<ElemType> _buf);
 #endif
 void test_highway(ankerl::nanobench::Bench &bench, ElemType x0, ElemType y0, ElemType x1, ElemType y1, int width, int height, int maxIters, std::vector<ElemType> _buf);
 void test_mipp(ankerl::nanobench::Bench &bench, ElemType x0, ElemType y0, ElemType x1, ElemType y1, int width, int height, int maxIters, std::vector<ElemType> _buf);

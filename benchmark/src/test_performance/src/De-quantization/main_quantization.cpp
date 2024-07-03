@@ -40,7 +40,7 @@ void test_std_simd(ankerl::nanobench::Bench &bench, ElemType dct[64], ElemType d
 void test_vc(ankerl::nanobench::Bench &bench, ElemType dct[64], ElemType dequant_mf[6][64], ElemType i_qp, ElemType res[64]);
 void test_tsimd(ankerl::nanobench::Bench &bench, ElemType dct[64], ElemType dequant_mf[6][64], ElemType i_qp, ElemType res[64]);
 #if defined(__x86_64__) || defined(_M_X64)
-  void test_vcl(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res);
+  void test_vcl(ankerl::nanobench::Bench &bench, ElemType dct[64], ElemType dequant_mf[6][64], ElemType i_qp, ElemType res[64]);
 #endif
 void test_highway(ankerl::nanobench::Bench &bench, ElemType dct[64], ElemType dequant_mf[6][64], ElemType i_qp, ElemType res[64]);
 void test_mipp(ankerl::nanobench::Bench &bench, ElemType dct[64], ElemType dequant_mf[6][64], ElemType i_qp, ElemType res[64]);

@@ -27,7 +27,7 @@ void test_std_simd(ankerl::nanobench::Bench &bench, int tsteps, int n, ElemType 
 void test_vc(ankerl::nanobench::Bench &bench, int tsteps, int n, ElemType A[ARRLENGTH][ARRLENGTH], ElemType B[ARRLENGTH][ARRLENGTH]);
 void test_tsimd(ankerl::nanobench::Bench &bench, int tsteps, int n, ElemType A[ARRLENGTH][ARRLENGTH], ElemType B[ARRLENGTH][ARRLENGTH]);
 #if defined(__x86_64__) || defined(_M_X64)
-  void test_vcl(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res);
+  void test_vcl(ankerl::nanobench::Bench &bench, int tsteps, int n, ElemType A[ARRLENGTH][ARRLENGTH], ElemType B[ARRLENGTH][ARRLENGTH]);
 #endif
 void test_highway(ankerl::nanobench::Bench &bench, int tsteps, int n, ElemType A[ARRLENGTH][ARRLENGTH], ElemType B[ARRLENGTH][ARRLENGTH]);
 void test_mipp(ankerl::nanobench::Bench &bench, int tsteps, int n, ElemType A[ARRLENGTH][ARRLENGTH], ElemType B[ARRLENGTH][ARRLENGTH]);
