@@ -25,7 +25,7 @@
 [submodule "simd_libraries/nanobench"]
 	path = simd_libraries/nanobench
 	url = git@github.com:martinus/nanobench.git
-[submodule "/home/haolin/SIMDTest/simd_libraries/simd_for_godbolt"]
-	path = /home/haolin/SIMDTest/simd_libraries/simd_for_godbolt
+[submodule "simd_libraries/simd_for_godbolt"]
+	path = simd_libraries/simd_for_godbolt
 	url = git@github.com:plctlab/simd_for_godbolt.git
 	branch = simd_math

@@ -15,10 +15,10 @@ template<typename Vec, typename Tp> struct AXPY_SIMD
     Vec x_simd, y_simd, res_simd;
     for (std::size_t i = 0; i < vec_size; i += len)
     {
-      details::Load_Aligned(x_simd, &x[i]);
-      details::Load_Aligned(y_simd, &y[i]);
+      details::Load_Unaligned(x_simd, &x[i]);
+      details::Load_Unaligned(y_simd, &y[i]);
       res_simd = details::BroadCast<Vec, Tp>(a) * x_simd + y_simd;
-      details::Store_Aligned(res_simd, &res[i]);
+      details::Store_Unaligned(res_simd, &res[i]);
     }
     for (std::size_t i = vec_size; i < ARRLENGTH; ++i)
     {

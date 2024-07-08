@@ -21,10 +21,10 @@ template<typename Vec, typename Tp> struct DE_QUAN_SIMD
     {
       for (int i = 0; i < 64; i += len)
       {
-        details::Load_Aligned(tmp_dct, &dct[i]);
-        details::Load_Aligned(tmp_dequant_mf, &dequant_mf[i_mf][i]);
+        details::Load_Unaligned(tmp_dct, &dct[i]);
+        details::Load_Unaligned(tmp_dequant_mf, &dequant_mf[i_mf][i]);
         tmp_dct = details::LeftShift<Vec, Tp>(tmp_dct * tmp_dequant_mf, i_qbits);
-        details::Store_Aligned(tmp_dct, &res[i]);
+        details::Store_Unaligned(tmp_dct, &res[i]);
       }
     }
     else
@@ -33,10 +33,10 @@ template<typename Vec, typename Tp> struct DE_QUAN_SIMD
           details::LeftShift<Vec, Tp>(details::BroadCast<Vec, Tp>(Tp(1)), -i_qbits - 1);
       for (int i = 0; i < 64; i += len)
       {
-        details::Load_Aligned(tmp_dct, &dct[i]);
-        details::Load_Aligned(tmp_dequant_mf, &dequant_mf[i_mf][i]);
+        details::Load_Unaligned(tmp_dct, &dct[i]);
+        details::Load_Unaligned(tmp_dequant_mf, &dequant_mf[i_mf][i]);
         tmp_dct = details::LeftShift<Vec, Tp>(tmp_dct * tmp_dequant_mf + f, -i_qbits);
-        details::Store_Aligned(tmp_dct, &res[i]);
+        details::Store_Unaligned(tmp_dct, &res[i]);
       }
     }
   }

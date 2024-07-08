@@ -5,7 +5,6 @@
 #pragma once
 
 #include <array>
-#include <experimental/simd>
 #include <type_traits>
 
 #include "MIPP/src/mipp.h"
@@ -22,7 +21,6 @@
 // #include "nsimd/nsimd-all.hpp"
 // #include <Vc/Vc>
 
-namespace ex = std::experimental::parallelism_v2;
 namespace hn = hwy::HWY_NAMESPACE;
 
 namespace utility
