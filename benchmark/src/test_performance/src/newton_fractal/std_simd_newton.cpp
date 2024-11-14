@@ -59,7 +59,7 @@ template<typename Vec, typename Mask, typename Tp> struct NEWTON_SIMD
       for (size_t i = 0; i < len; ++i)
           index[i] = i;
       Vec iota;
-      details::Load_Unaligned<Vec, Tp>(iota, index.data());
+      details::Load_Unaligned(iota, index.data());
 
       Vec dx = (xmax - xmin) / details::BroadCast<Vec, Tp>(nx);
       Vec dy = (ymax - ymin) / details::BroadCast<Vec, Tp>(ny), dyv = (iota * dy);
