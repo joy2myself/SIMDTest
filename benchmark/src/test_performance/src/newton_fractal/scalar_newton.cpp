@@ -3,7 +3,7 @@
 #include <array>
 using ElemType = float;
 
-const std::size_t ITERATION = 500;
+const std::size_t ITERATION = 50000;
 struct Color
 {
   uint8_t alpha;
