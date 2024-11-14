@@ -67,40 +67,40 @@ if (CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64|arm64)$")
 
     # ##################################################################################################################################
 
-    # sve
-    # add AXPY_sve
-    add_library(${BENCH_NAME}_sve_object OBJECT
-                # eve_${BENCH_NAME}.cpp
-                vc_${BENCH_NAME}.cpp
-                std_simd_${BENCH_NAME}.cpp
-                highway_${BENCH_NAME}.cpp
-                tsimd_${BENCH_NAME}.cpp
-                mipp_${BENCH_NAME}.cpp
-                # xsimd_${BENCH_NAME}.cpp
-                )
-    target_include_directories(${BENCH_NAME}_sve_object PRIVATE
-                ${SIMD_LIBRARY_PATH})
+    # # sve
+    # # add AXPY_sve
+    # add_library(${BENCH_NAME}_sve_object OBJECT
+    #             # eve_${BENCH_NAME}.cpp
+    #             vc_${BENCH_NAME}.cpp
+    #             std_simd_${BENCH_NAME}.cpp
+    #             highway_${BENCH_NAME}.cpp
+    #             tsimd_${BENCH_NAME}.cpp
+    #             mipp_${BENCH_NAME}.cpp
+    #             # xsimd_${BENCH_NAME}.cpp
+    #             )
+    # target_include_directories(${BENCH_NAME}_sve_object PRIVATE
+    #             ${SIMD_LIBRARY_PATH})
 
-    if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        target_compile_options(${BENCH_NAME}_sve_object PRIVATE --target=aarch64-linux-gnu -march=armv8-a+sve -O2 -fno-vectorize -std=c++2a)
-    else()
-        target_compile_options(${BENCH_NAME}_sve_object PRIVATE --target=aarch64-linux-gnu -march=armv8-a+sve -O2 -fno-tree-vectorize -std=c++2a)
-    endif()
+    # if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    #     target_compile_options(${BENCH_NAME}_sve_object PRIVATE --target=aarch64-linux-gnu -march=armv8-a+sve -O2 -fno-vectorize -std=c++2a)
+    # else()
+    #     target_compile_options(${BENCH_NAME}_sve_object PRIVATE --target=aarch64-linux-gnu -march=armv8-a+sve -O2 -fno-tree-vectorize -std=c++2a)
+    # endif()
 
-    set(GENERATED_CPP "main_${BENCH_NAME}_modified_sve.cpp")
-    add_custom_command(
-        OUTPUT ${GENERATED_CPP}
-        COMMAND cat ${CMAKE_CURRENT_SOURCE_DIR}/main_${BENCH_NAME}.cpp | sed 's/define PLACE_HOLDER 1/define PLACE_HOLDER 0/' > ${CMAKE_CURRENT_BINARY_DIR}/${GENERATED_CPP}
-    )
+    # set(GENERATED_CPP "main_${BENCH_NAME}_modified_sve.cpp")
+    # add_custom_command(
+    #     OUTPUT ${GENERATED_CPP}
+    #     COMMAND cat ${CMAKE_CURRENT_SOURCE_DIR}/main_${BENCH_NAME}.cpp | sed 's/define PLACE_HOLDER 1/define PLACE_HOLDER 0/' > ${CMAKE_CURRENT_BINARY_DIR}/${GENERATED_CPP}
+    # )
     
-    #add executable AXPY_sve
-    add_executable(
-        ${BENCH_NAME}_sve
-        ${GENERATED_CPP}
-    )
-    target_include_directories(${BENCH_NAME}_sve PRIVATE
-                ${SIMD_LIBRARY_PATH})
-    target_link_libraries(${BENCH_NAME}_sve ${BENCH_NAME}_scalar_object ${BENCH_NAME}_sve_object)
+    # #add executable AXPY_sve
+    # add_executable(
+    #     ${BENCH_NAME}_sve
+    #     ${GENERATED_CPP}
+    # )
+    # target_include_directories(${BENCH_NAME}_sve PRIVATE
+    #             ${SIMD_LIBRARY_PATH})
+    # target_link_libraries(${BENCH_NAME}_sve ${BENCH_NAME}_scalar_object ${BENCH_NAME}_sve_object)
 
     ##################################################################################################################################
 
