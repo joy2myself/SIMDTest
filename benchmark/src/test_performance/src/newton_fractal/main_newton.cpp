@@ -31,7 +31,7 @@ void Initial()
 const float xmin = -2, xmax = 2;
 const float ymin = -2, ymax = 2;
 const size_t nx = 8, ny = 8, max_iter = 4;
-Color *image = new Color[nx * ny];
+Color *image = new Color[nx * ny * 100];
 
 
 
@@ -81,4 +81,6 @@ int main()
       test_xsimd(b_native, xmin, xmax, nx, ymin, ymax, ny, max_iter, image);
       test_eve(b_native, xmin, xmax, nx, ymin, ymax, ny, max_iter, image);
     }
+
+    delete[] image;
 }
