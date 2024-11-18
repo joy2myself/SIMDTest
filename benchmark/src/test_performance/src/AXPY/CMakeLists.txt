@@ -236,37 +236,37 @@ elseif (CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86_64|AMD64)$")
 
     ##################################################################################################################################
 
-    # avx2_fma
-    # add AXPY_avx2_fma
-    add_library(${BENCH_NAME}_avx2_fma_object OBJECT
-                eve_${BENCH_NAME}.cpp
-                vc_${BENCH_NAME}.cpp
-                std_simd_${BENCH_NAME}.cpp
-                highway_${BENCH_NAME}.cpp
-                tsimd_${BENCH_NAME}.cpp
-                mipp_${BENCH_NAME}.cpp
-                xsimd_${BENCH_NAME}.cpp
-                vcl_${BENCH_NAME}.cpp
-    )
-    target_include_directories(${BENCH_NAME}_avx2_fma_object PRIVATE
-                ${SIMD_LIBRARY_PATH})
-    target_compile_options(${BENCH_NAME}_avx2_fma_object PRIVATE -mavx2 -mfma -O2 -std=c++2a)
-
-    # add AXPY_nsimd_avx2_fma object
-    # add_library(${BENCH_NAME}_nsimd_avx2_fma_object OBJECT
-    #             nsimd_${BENCH_NAME}.cpp)
-    # target_include_directories(${BENCH_NAME}_nsimd_avx2_fma_object PRIVATE
+    # # avx2_fma
+    # # add AXPY_avx2_fma
+    # add_library(${BENCH_NAME}_avx2_fma_object OBJECT
+    #             eve_${BENCH_NAME}.cpp
+    #             vc_${BENCH_NAME}.cpp
+    #             std_simd_${BENCH_NAME}.cpp
+    #             highway_${BENCH_NAME}.cpp
+    #             tsimd_${BENCH_NAME}.cpp
+    #             mipp_${BENCH_NAME}.cpp
+    #             xsimd_${BENCH_NAME}.cpp
+    #             vcl_${BENCH_NAME}.cpp
+    # )
+    # target_include_directories(${BENCH_NAME}_avx2_fma_object PRIVATE
     #             ${SIMD_LIBRARY_PATH})
-    # target_compile_options(${BENCH_NAME}_nsimd_avx2_fma_object PRIVATE -mavx2 -mfma -O2 -std=c++2a -DAVX2 -L${NSIMD_LIBRARY_PATH}/build-avx2-gcc/ -lnsimd_avx2)
+    # target_compile_options(${BENCH_NAME}_avx2_fma_object PRIVATE -mavx2 -mfma -O2 -std=c++2a)
 
-    #add executable AXPY_avx2_fma
-    add_executable(
-        ${BENCH_NAME}_avx2_fma
-        main_${BENCH_NAME}.cpp
-    )
-    target_include_directories(${BENCH_NAME}_avx2_fma PRIVATE
-                ${SIMD_LIBRARY_PATH})
-    target_link_libraries(${BENCH_NAME}_avx2_fma ${BENCH_NAME}_scalar_object ${BENCH_NAME}_avx2_fma_object)
+    # # add AXPY_nsimd_avx2_fma object
+    # # add_library(${BENCH_NAME}_nsimd_avx2_fma_object OBJECT
+    # #             nsimd_${BENCH_NAME}.cpp)
+    # # target_include_directories(${BENCH_NAME}_nsimd_avx2_fma_object PRIVATE
+    # #             ${SIMD_LIBRARY_PATH})
+    # # target_compile_options(${BENCH_NAME}_nsimd_avx2_fma_object PRIVATE -mavx2 -mfma -O2 -std=c++2a -DAVX2 -L${NSIMD_LIBRARY_PATH}/build-avx2-gcc/ -lnsimd_avx2)
+
+    # #add executable AXPY_avx2_fma
+    # add_executable(
+    #     ${BENCH_NAME}_avx2_fma
+    #     main_${BENCH_NAME}.cpp
+    # )
+    # target_include_directories(${BENCH_NAME}_avx2_fma PRIVATE
+    #             ${SIMD_LIBRARY_PATH})
+    # target_link_libraries(${BENCH_NAME}_avx2_fma ${BENCH_NAME}_scalar_object ${BENCH_NAME}_avx2_fma_object)
 
     ##################################################################################################################################
 
