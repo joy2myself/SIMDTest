@@ -7,7 +7,7 @@
 
 using ElemType = float;
 
-const std::size_t ARRLENGTH = 256;
+const std::size_t ARRLENGTH = 128;
 const std::size_t LEN = 4;
 const std::size_t ITERATION = 500000;
 
