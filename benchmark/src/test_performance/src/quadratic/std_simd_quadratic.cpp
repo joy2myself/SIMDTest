@@ -9,71 +9,63 @@ using ElemType = float;
 const size_t kN = (1024 * 1024);
 const std::size_t ITERATION = 100;
 
-template<typename Vec, typename Mask, typename Tp> struct QUADRATIC_SIMD
-{
-  void QuadSolveSIMD(Vec const &a, Vec const &b, Vec const &c, Vec &x1, Vec &x2, Vec &roots)
-  {
-    Vec a_inv = details::BroadCast<Vec, Tp>(Tp(1.0f)) / a;
-    Vec delta = b * b - details::BroadCast<Vec, Tp>(Tp(4.0f)) * a * c;
-    Vec sign;
-    sign = details::Select<Mask, Vec, Tp>(b >= details::BroadCast<Vec, Tp>(Tp(0.0f)), details::BroadCast<Vec, Tp>(Tp(1.0f)), sign);
-    sign = details::Select<Mask, Vec, Tp>(b < details::BroadCast<Vec, Tp>(Tp(0.0f)), details::BroadCast<Vec, Tp>(Tp(-1.0f)), sign);
+template <typename Vec, typename Mask, typename Tp>
+struct QUADRATIC_SIMD {
+void QuadSolveSIMD(const Vec &a, const Vec &b, const Vec &c, Vec &x1, Vec &x2, Vec &roots) {
+    Vec vec_zero = details::BroadCast<Vec, Tp>(Tp(0.0));
+    Vec vec_one = details::BroadCast<Vec, Tp>(Tp(1.0));
+    Vec vec_neg_one = details::BroadCast<Vec, Tp>(Tp(-1.0));
+    Vec vec_four = details::BroadCast<Vec, Tp>(Tp(4.0));
+    Vec vec_neg_half = details::BroadCast<Vec, Tp>(Tp(-0.5));
+    Vec vec_epsilon = details::BroadCast<Vec, Tp>(std::numeric_limits<Tp>::epsilon());
 
-    auto mask0 = delta < details::BroadCast<Vec, Tp>(Tp(0.0f));
-    auto mask2 = delta >= details::BroadCast<Vec, Tp>(Tp(std::numeric_limits<Tp>::epsilon()));
+    Vec delta = b * b - vec_four * a * c;
 
-    Vec root1 = details::BroadCast<Vec, Tp>(Tp(-0.5f)) * b + sign * details::Sqrt<Tp>(delta);
+    Vec sqrt_delta = details::Sqrt<Tp>(delta);
+
+    Mask no_real_roots = (delta < vec_zero);
+    Mask single_root = (delta < vec_epsilon) & !no_real_roots;
+    Mask two_roots = !no_real_roots & !single_root;
+
+    Vec inv_a = vec_one / a;
+    Vec root1 = vec_neg_half * (b + sqrt_delta) * inv_a;
     Vec root2 = c / root1;
-    root1 = root1 * a_inv;
 
-    auto mask1 = details::Not<Tp>(details::Or<Tp>(mask2, mask0));
+    details::Select<Mask, Vec, Tp>(two_roots, root1, x1);
+    details::Select<Mask, Vec, Tp>(two_roots, root2, x2);
+    details::Select<Mask, Vec, Tp>(two_roots, details::BroadCast<Vec, Tp>(Tp(2)), roots);
 
-    x1 = details::Select<Mask, Vec, Tp>(mask2, root1, x1);
-    x2 = details::Select<Mask, Vec, Tp>(mask2, root2, x2);
-    roots = details::Select<Mask, Vec, Tp>(mask2, details::BroadCast<Vec, Tp>(Tp(2)), x2);
-    roots = details::Select<Mask, Vec, Tp>(details::Not<Tp>(mask2), details::BroadCast<Vec, Tp>(Tp(0)), x2);
-    if (details::None<Tp>(mask1)) 
-      return;
+    Vec single = vec_neg_half * b * inv_a;
+    details::Select<Mask, Vec, Tp>(single_root, single, x1);
+    details::Select<Mask, Vec, Tp>(single_root, single, x2);
+    details::Select<Mask, Vec, Tp>(single_root, vec_one, roots);
 
-    root1 = details::BroadCast<Vec, Tp>(Tp(-0.5f)) * b * a_inv;
-
-    roots = details::Select<Mask, Vec, Tp>(mask1, details::BroadCast<Vec, Tp>(Tp(1)), roots);
-    x1 = details::Select<Mask, Vec, Tp>(mask1, root1, x1);
-    x2 = details::Select<Mask, Vec, Tp>(mask1, root1, x2);
+    details::Select<Mask, Vec, Tp>(no_real_roots, vec_zero, x1);
+    details::Select<Mask, Vec, Tp>(no_real_roots, vec_zero, x2);
+    details::Select<Mask, Vec, Tp>(no_real_roots, vec_zero, roots);
   }
 
-  void TestQuadSolve(const ElemType *a, const ElemType *b, const ElemType *c, ElemType *x1, ElemType *x2, ElemType *roots)
-  {
-    for (size_t i = 0; i < kN; i += details::Len<Vec, Tp>())
-    {
-      
-      Vec a_v, b_v, c_v, x1_v, x2_v, roots_v;
-      details::Load_Unaligned(a_v, &a[i]);
-      details::Load_Unaligned(b_v, &b[i]);
-      details::Load_Unaligned(c_v, &c[i]);
-      details::Load_Unaligned(x1_v, &x1[i]);
-      details::Load_Unaligned(x2_v, &x2[i]);
-      details::Load_Unaligned(roots_v, &roots[i]);
+void TestQuadSolve(const Tp *a, const Tp *b, const Tp *c, Tp *x1, Tp *x2, Tp *roots) {
+    size_t simd_width = details::Len<Vec, Tp>();
+    for (size_t i = 0; i < kN; i += simd_width) {
+        Vec a_v, b_v, c_v, x1_v, x2_v, roots_v;
 
-      QuadSolveSIMD(
-      a_v, 
-      b_v, 
-      c_v, 
-      x1_v, 
-      x2_v, 
-      roots_v
-      );
+        details::Load_Unaligned<Vec, Tp>(a_v, &a[i]);
+        details::Load_Unaligned<Vec, Tp>(b_v, &b[i]);
+        details::Load_Unaligned<Vec, Tp>(c_v, &c[i]);
+        details::Load_Unaligned<Vec, Tp>(x1_v, &x1[i]);
+        details::Load_Unaligned<Vec, Tp>(x2_v, &x2[i]);
+        details::Load_Unaligned<Vec, Tp>(roots_v, &roots[i]);
 
-      details::Store_Unaligned(roots_v, &roots[i]);
+        QuadSolveSIMD(a_v, b_v, c_v, x1_v, x2_v, roots_v);
+
+        details::Store_Unaligned<Vec, Tp>(roots_v, &roots[i]);
     }
-  }
-
-  void operator()(const ElemType *a, const ElemType *b, const ElemType *c, ElemType *x1, ElemType *x2, ElemType *roots)
-  {
-    TestQuadSolve(a, b, c, x1, x2, roots);
-  }
+}
+    void operator()(const Tp *a, const Tp *b, const Tp *c, Tp *x1, Tp *x2, Tp *roots) {
+        TestQuadSolve(a, b, c, x1, x2, roots);
+    }
 };
-
 
 void test_std_simd(ankerl::nanobench::Bench &bench, const ElemType *a, const ElemType *b, const ElemType *c, ElemType *x1, ElemType *x2, ElemType *roots)
 {
