@@ -42,10 +42,11 @@ struct RGB2YUV_SCALAR
 #endif
 };
 
-
+// 使用 nanobench 对标量实现进行性能测试
 void test_scalar(ankerl::nanobench::Bench &bench, ElemType *ra, ElemType *ga, ElemType *ba, ElemType *ya, ElemType *ua, ElemType *va)
 { 
   RGB2YUV_SCALAR f;
+  // 配置 nanobench 的性能测试，指定最少迭代次数，执行标量实现并记录性能结果
   bench.minEpochIterations(ITERATION).run("scalar", [&]() {
     f(ra, ga, ba, ya, ua, va);
     ankerl::nanobench::doNotOptimizeAway(f);});

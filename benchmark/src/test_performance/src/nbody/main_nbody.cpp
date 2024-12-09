@@ -64,16 +64,19 @@ int main()
 {
     Initial();
 
+    // 创建 nanobench 测试对象并配置基本参数，设置测试表头标题，启用性能计数器信息
     ankerl::nanobench::Bench b_native;
     b_native.title("nbody_TEST_NATIVE").unit("nbody_NATIVE").warmup(100).relative(true);
     b_native.performanceCounters(true);
 
+    // 使用 nanobench 测试 标量程序 的性能
     test_scalar(b_native, posx, posy, posz, velx, vely, velz, mass, kN);
 
     // #ifndef NSIMD_INEFFECTIVE
     // test_nsimd(b_native, posx, posy, posz, velx, vely, velz, mass, kN);
     // #endif
     
+    // 使用 nanobench 测试 simd程序 的性能
     test_std_simd(b_native, posx, posy, posz, velx, vely, velz, mass, kN);
     test_vc(b_native, posx, posy, posz, velx, vely, velz, mass, kN);
     test_highway(b_native, posx, posy, posz, velx, vely, velz, mass, kN);

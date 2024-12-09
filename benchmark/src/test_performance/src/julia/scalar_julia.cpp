@@ -96,10 +96,11 @@ struct JULIA_SCALAR
   }
 };
 
-
+// 使用 nanobench 对标量实现进行性能测试
 void test_scalar(ankerl::nanobench::Bench &bench, ElemType xmin, ElemType xmax, size_t nx, ElemType ymin, ElemType ymax, size_t ny, size_t max_iter, unsigned char *image, ElemType real, ElemType im)
 { 
   JULIA_SCALAR f;
+  // 配置 nanobench 的性能测试，指定最少迭代次数，执行标量实现并记录性能结果
   bench.minEpochIterations(5).run("scalar", [&]() {
     f(xmin, xmax, nx, ymin, ymax, ny, max_iter, image, real, im);
     ankerl::nanobench::doNotOptimizeAway(f);});

@@ -49,10 +49,11 @@ struct QUADRATIC_SCALAR
   }
 };
 
-
+// 使用 nanobench 对标量实现进行性能测试
 void test_scalar(ankerl::nanobench::Bench &bench, const ElemType *a, const ElemType *b, const ElemType *c, ElemType *x1, ElemType *x2, ElemType *roots)
 { 
   QUADRATIC_SCALAR f;
+  // 配置 nanobench 的性能测试，指定最少迭代次数，执行标量实现并记录性能结果
   bench.minEpochIterations(ITERATION).run("scalar", [&]() {
     f(a, b, c, x1, x2, roots);
     ankerl::nanobench::doNotOptimizeAway(f);});

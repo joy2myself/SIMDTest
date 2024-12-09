@@ -67,6 +67,7 @@ void TestQuadSolve(const Tp *a, const Tp *b, const Tp *c, Tp *x1, Tp *x2, Tp *ro
     }
 };
 
+// 使用 nanobench 对simd实现进行性能测试
 void test_std_simd(ankerl::nanobench::Bench &bench, const ElemType *a, const ElemType *b, const ElemType *c, ElemType *x1, ElemType *x2, ElemType *roots)
 {
 #if defined(USE_PLCT_SIMD)
@@ -77,6 +78,7 @@ void test_std_simd(ankerl::nanobench::Bench &bench, const ElemType *a, const Ele
   });
 #else
   QUADRATIC_SIMD<std_simd_t_v_native<ElemType>, std_simd_t_m_native<ElemType>, ElemType> func;
+  // 配置 nanobench 的性能测试，指定最少迭代次数，执行simd实现并记录性能结果
   bench.minEpochIterations(ITERATION).run("std_simd", [&]() {
     func(a, b, c, x1, x2, roots);
     ankerl::nanobench::doNotOptimizeAway(func);

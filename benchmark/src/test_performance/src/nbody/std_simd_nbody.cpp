@@ -80,7 +80,7 @@ template<typename Vec, typename Tp> struct NBODY_SIMD
   }
 };
 
-
+// 使用 nanobench 对simd实现进行性能测试
 void test_std_simd(ankerl::nanobench::Bench &bench, ElemType *posx, ElemType *posy, ElemType *posz, ElemType *velx, ElemType *vely, ElemType *velz, ElemType *mass, size_t kN)
 {
 #if defined(USE_PLCT_SIMD)
@@ -91,6 +91,7 @@ void test_std_simd(ankerl::nanobench::Bench &bench, ElemType *posx, ElemType *po
   });
 #else
   NBODY_SIMD<std_simd_t_v_native<ElemType>, ElemType> func;
+  // 配置 nanobench 的性能测试，指定最少迭代次数，执行simd实现并记录性能结果
   bench.minEpochIterations(100).run("std_simd", [&]() {
     func(posx, posy, posz, velx, vely, velz, mass, kN);
     ankerl::nanobench::doNotOptimizeAway(func);
