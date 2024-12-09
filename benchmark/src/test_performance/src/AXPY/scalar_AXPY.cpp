@@ -27,9 +27,11 @@ struct AXPY_SCALAR
 #endif
 };
 
+// 使用 nanobench 对标量实现进行性能测试
 void test_scalar(ankerl::nanobench::Bench &bench, ElemType a, ElemType *x, ElemType *y, ElemType *res)
 { 
   AXPY_SCALAR f;
+  // 配置 nanobench 的性能测试，指定最少迭代次数，执行标量实现并记录性能结果
   bench.minEpochIterations(ITERATION).run("scalar", [&]() {
     f(a, x, y, res);
     ankerl::nanobench::doNotOptimizeAway(f);});

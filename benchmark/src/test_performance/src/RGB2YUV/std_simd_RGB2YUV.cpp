@@ -38,7 +38,7 @@ template<typename Vec, typename Tp> struct RGB2YUV_SIMD
   }
 };
 
-
+// 使用 nanobench 对simd实现进行性能测试
 void test_std_simd(ankerl::nanobench::Bench &bench, ElemType *ra, ElemType *ga, ElemType *ba, ElemType *ya, ElemType *ua, ElemType *va)
 {
 #if defined(USE_PLCT_SIMD)
@@ -51,6 +51,7 @@ void test_std_simd(ankerl::nanobench::Bench &bench, ElemType *ra, ElemType *ga, 
   RGB2YUV_SIMD<std_simd_t_v_native<ElemType>, ElemType> func;
   bench.minEpochIterations(ITERATION).run("std_simd", [&]() {
     func(ra, ga, ba, ya, ua, va);
+  // 配置 nanobench 的性能测试，指定最少迭代次数，执行simd实现并记录性能结果
     ankerl::nanobench::doNotOptimizeAway(func);
   });
 #endif

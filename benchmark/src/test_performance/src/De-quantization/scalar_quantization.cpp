@@ -58,9 +58,11 @@ struct DE_QUAN_SCALAR
 #endif
 };
 
+// 使用 nanobench 对标量实现进行性能测试
 void test_scalar(ankerl::nanobench::Bench &bench, ElemType dct[64], ElemType dequant_mf[6][64], ElemType i_qp, ElemType res[64])
 { 
   DE_QUAN_SCALAR f;
+  // 配置 nanobench 的性能测试，指定最少迭代次数，执行标量实现并记录性能结果
   bench.minEpochIterations(ITERATION).run("scalar", [&]() {
     f(dct, dequant_mf, i_qp, res);
     ankerl::nanobench::doNotOptimizeAway(f);});
